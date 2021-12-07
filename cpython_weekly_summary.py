@@ -18,7 +18,6 @@ report_start_date = datetime.datetime(2021, 11, 15)  # change this
 report_end_date = datetime.datetime(2021, 11, 21)  # change this
 
 logging.basicConfig(encoding="utf-8", level=logging.WARNING)
-
 # no date filter on get_pulls() method yet; state inputs must be single string
 # get all PRs, so we can capture closed, merged and reviewed together
 # sort via updated in reverse order; so we can stop iterating over API and
@@ -40,6 +39,11 @@ def timer_decorator(func):
         return result
 
     return wrap_func
+
+
+def create_date_object(input_standard_date_string):
+    """given input string of form YYYY-MM-DD HH:MM:SS; convert to datetime object"""
+    return datetime.datetime.strptime(input_standard_date_string, "%Y-%m-%d %H:%M:%S")
 
 
 @timer_decorator
@@ -73,21 +77,19 @@ def get_pull_requests_of_interest(pull_request_inputs):
                     f"{user}  "
                 )
             if (
-                    each_pull_request.merged_by is not None
-                    and each_pull_request.merged_at is not None
+                each_pull_request.merged_by is not None
+                and each_pull_request.merged_at is not None
             ):
                 # keep only PRs we are interested in
                 if (
-                        each_pull_request.state == "closed"
-                        and each_pull_request.merged_by.login in developer_ids
-                        and report_start_date
-                        <= each_pull_request.merged_at
-                        <= report_end_date
+                    each_pull_request.state == "closed"
+                    and each_pull_request.merged_by.login in developer_ids
+                    and report_start_date
+                    <= each_pull_request.merged_at
+                    <= report_end_date
                 ):
                     # TO DO: dump into list of dicts
-                    pull_requests_of_interest.append(
-                        each_pull_request
-                    )
+                    pull_requests_of_interest.append(each_pull_request)
 
     return pull_requests_of_interest
 
@@ -98,9 +100,9 @@ def extract_friendly_report_info(pull_request_list):
     extracts and formats key fields into copy/paste ready text block
     to drop into the weekly blog report
     :param pull_request_list: list of tuples, subset of PRs we care about
-    :return: report_output; list of lists we can easily print
+    :return: report_data; list of lists we can easily print
     """
-    report_output = []
+    report_data = []
     for each_pull_request in pull_request_list:
 
         # create concise text and HTML link for this PR
@@ -112,19 +114,74 @@ def extract_friendly_report_info(pull_request_list):
         # create friendly PR title for blog; trap for missing data
         if each_pull_request.base.ref is None:
             friendly_title = each_pull_request.title
+
         elif each_pull_request.base.ref not in each_pull_request.title:
             # add python version to title if not there already
-            friendly_title = f"[{each_pull_request.base.ref}] " \
-                             f"{each_pull_request.title}"
+            friendly_title = (
+                f"[{each_pull_request.base.ref}] " f"{each_pull_request.title}"
+            )
+
         else:
             friendly_title = each_pull_request.title
 
-        report_output.append(
-            f"{each_pull_request.merged_at.strftime('%A')} \
-             {each_pull_request.base.ref:>6}  \
-             {link_url}  \
-             {friendly_title}"
+        report_data.append(
+            tuple(
+                (
+                    f"{each_pull_request.merged_at}",
+                    "PR",
+                    f"{each_pull_request.base.ref:>6}",
+                    f"{link_url}",
+                    f"{friendly_title}",
+                )
+            )
         )
+
+    # messy nested sort worth it for easy copy & paste output
+    # outer sort = day of week (ascending)
+    # 2nd sort = issue/PR (ascending)
+    # inner sort = branch name (descending)
+    report_data = sorted(
+        sorted(
+            sorted(report_data, key=lambda key2: key2[2], reverse=True),
+            key=lambda key1: key1[1],
+        ),
+        key=lambda key0: datetime.datetime.fromisoformat(key0[0]).date(),
+    )
+
+    return report_data
+
+
+@timer_decorator
+def format_blog_html_block(report_data):
+    """
+    create html block to mirror existing blog format for `Detailed Log` section
+    bullet list sorted by Day of Week; category of work done (e.g., Issue/PR), then item
+    :param report_data: list of tuples of input data
+    :return: report_output: list of lists, ready for manual copy/paste into blog
+    """
+    report_output = []
+    reporting_period = report_end_date - report_start_date
+
+    for each_date in range(reporting_period.days + 1):
+        workday = (report_start_date + datetime.timedelta(days=each_date)).date()
+        report_output.append(f"{workday.strftime('%A')}")
+
+        for report_item in report_data:
+            current_day = report_data[0]
+
+            while current_day.date() == workday:
+                for git_work_product in ["Issue", "PR"]:
+                    report_output.append(f"{git_work_product}")
+                    while report_data[1] == git_work_product:
+                        report_output.append(
+                            f"<li> {report_item[3]}:>16  " f"f{report_item[4]}  /li>"
+                        )
+
+                    # add blank line to space output at end of each section
+                    report_output.append("")
+                report_output.append("")
+            report_output.append("")
+        report_output.append("")
 
     return report_output
 
@@ -134,7 +191,9 @@ def extract_friendly_report_info(pull_request_list):
 try:
     pull_reports_we_care_about = get_pull_requests_of_interest(pull_requests_all)
 except github.RateLimitExceededException:
-    print(f"github rate limit exceeded", github.RateLimitExceededException)
+    logging.error(f"github rate limit exceeded", github.RateLimitExceededException)
+except github.GithubException as error:
+    logging.error(f"a server error occurred {error}")
 
 try:
     final_summary = extract_friendly_report_info(pull_reports_we_care_about)
@@ -143,7 +202,8 @@ except IndexError as error:
 
 print(f"github ratelimit status is: {github_ratelimit}")
 
-# clean up for easy copy & paste
-final_summary.sort(key=lambda x: x[:7], reverse=True)
+# nice formatting
+final_summary = format_blog_html_block(final_summary)
+
 for item in final_summary:
     print(item)  # cut the branch name from prefix to mirror current blog format
