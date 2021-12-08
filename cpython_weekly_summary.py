@@ -118,11 +118,15 @@ def extract_friendly_report_info(pull_request_list):
         elif each_pull_request.base.ref not in each_pull_request.title:
             # add python version to title if not there already
             friendly_title = (
-                f"[{each_pull_request.base.ref}] " f"{each_pull_request.title}"
+                f"[{each_pull_request.base.ref}] {each_pull_request.title}"
             )
 
         else:
             friendly_title = each_pull_request.title
+
+        potential_duplicate_pr_ref_num = f"(GH-{each_pull_request.number})"
+        if potential_duplicate_pr_ref_num in friendly_title:
+            friendly_title.replace(each_pull_request.number, "")
 
         report_data.append(
             tuple(
@@ -160,28 +164,36 @@ def format_blog_html_block(report_data):
     :return: report_output: list of lists, ready for manual copy/paste into blog
     """
     report_output = []
-    reporting_period = report_end_date - report_start_date
+    last_day_used = None
+    last_work_product_used = None
 
-    for each_date in range(reporting_period.days + 1):
-        workday = (report_start_date + datetime.timedelta(days=each_date)).date()
-        report_output.append(f"{workday.strftime('%A')}")
+    for report_item in report_data:
+        current_day = datetime.datetime.fromisoformat(report_item[0]).date()
+        current_work_product = report_item[1]
 
-        for report_item in report_data:
-            current_day = report_data[0]
-
-            while current_day.date() == workday:
-                for git_work_product in ["Issue", "PR"]:
-                    report_output.append(f"{git_work_product}")
-                    while report_data[1] == git_work_product:
-                        report_output.append(
-                            f"<li> {report_item[3]}:>16  " f"f{report_item[4]}  /li>"
-                        )
-
-                    # add blank line to space output at end of each section
-                    report_output.append("")
-                report_output.append("")
+        # insert section row for each time the day changes
+        if current_day != last_day_used:
             report_output.append("")
-        report_output.append("")
+            report_output.append(f"{current_day.strftime('%A')}")
+            last_day_used = current_day
+
+        # insert section row each time the word product changes
+        if current_work_product != last_work_product_used:
+            report_output.append("")
+            report_output.append(f"{current_work_product}")
+            last_work_product_used = current_work_product
+
+        # check spacing in item title, so branch names line up neatly
+        # fixes branch names <= [3.9]; [main], [3.10] and beyond have same len()
+        if report_item[4][5] != "]":
+            formatted_title = report_item[4].rjust(len(report_item[4]) + 1)
+        else:
+            formatted_title = report_item[4]
+
+        report_output.append(f"<li> {report_item[3]} {formatted_title}/li>")
+
+    # END for loop - add blank line at end of table
+    report_output.append("")
 
     return report_output
 

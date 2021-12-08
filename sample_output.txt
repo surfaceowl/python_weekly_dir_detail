@@ -1,57 +1,71 @@
-C:\Users\chris\PycharmProjects\python_weekly_dir_detail\venv\Scripts\python.exe C:/Users/chris/PycharmProjects/python_weekly_dir_detail/cpython_weekly_summary.py
-github ratelimit status is: RateLimit(core=Rate(reset=2021-12-07 07:51:15, remaining=4533, limit=5000))
-      50   29301  2021-12-06 00:06:29  ericsnowcurrently
-     100   29513  2021-12-04 01:02:17  thatbirdguythatuknownot
-     150   29196  2021-12-01 00:08:08  FFY00
-     200   29165  2021-11-29 13:34:42  markshannon
-     250   29807  2021-11-26 23:30:46  miss-islington
-     300   29627  2021-11-25 09:41:30  iritkatriel
-     350   29188  2021-11-23 14:36:54  tiran
-     400   29686  2021-11-21 12:00:14  badal8381
-     450   29649  2021-11-20 00:11:45  zooba
-     500   29594  2021-11-18 08:18:46  tiran
-     550   29163  2021-11-16 07:40:03  nanjekyejoannah
-function 'get_pull_requests_of_interest' executed in 264.9599s
+github ratelimit status is: RateLimit(core=Rate(reset=2021-12-08 19:36:59, remaining=4356, limit=5000))
+      50   29969  2021-12-07 19:56:44  tiran
+     100   29895  2021-12-06 15:01:53  AlexWaygood
+     150   29904  2021-12-04 10:08:01  tiran
+     200   26130  2021-12-01 15:39:42  vstinner
+     250   29591  2021-11-29 15:31:22  erlend-aasland
+     300   29811  2021-11-27 00:42:07  miss-islington
+     350   29732  2021-11-25 12:41:54  vstinner
+     400   29512  2021-11-23 16:46:52  tstolarski
+     450   29625  2021-11-21 15:30:46  pablogsal
+     500   29641  2021-11-20 09:35:55  JMcB17
+     550   29611  2021-11-18 08:50:50  ethanfurman
+     600   29537  2021-11-16 09:57:20  miss-islington
+function 'get_pull_requests_of_interest' executed in 242.9023s
 function 'extract_friendly_report_info' executed in 0.0000s
-github ratelimit status is: RateLimit(core=Rate(reset=2021-12-07 07:51:15, remaining=4533, limit=5000))
-Wednesday                 3.9               <a href=https://github.com/python/cpython/pull/29600>closed GH-29600</a>               [3.9] bpo-42540: reallocation of id_mutex should not force default allocator (GH-29564)
-Wednesday                main               <a href=https://github.com/python/cpython/pull/29571>closed GH-29571</a>               [main] Add missing word in unittest docs.
-Wednesday                 3.9               <a href=https://github.com/python/cpython/pull/29585>closed GH-29585</a>               [3.9] bpo-45822: Respect PEP 263's coding cookies in the parser even if flags are not provided (GH-29582)
-Wednesday                3.10               <a href=https://github.com/python/cpython/pull/29586>closed GH-29586</a>               [3.10] bpo-45822: Respect PEP 263's coding cookies in the parser even if flags are not provided (GH-29582).
-Wednesday                main               <a href=https://github.com/python/cpython/pull/29590>closed GH-29590</a>               [main] bpo-45826: Fix a crash in suggestions.c by checking for `traceback is None`
-Wednesday                3.10               <a href=https://github.com/python/cpython/pull/29598>closed GH-29598</a>               [3.10] bpo-45831: _Py_DumpASCII() uses a single write() call if possible (GH-29596)
-Wednesday                 3.9               <a href=https://github.com/python/cpython/pull/29597>closed GH-29597</a>               [3.9] bpo-45831: _Py_DumpASCII() uses a single write() call if possible (GH-29596)
-Wednesday                main               <a href=https://github.com/python/cpython/pull/29596>closed GH-29596</a>               [main] bpo-45831: _Py_DumpASCII() uses a single write() call if possible
-Tuesday                 3.8               <a href=https://github.com/python/cpython/pull/29537>closed GH-29537</a>               [3.8] bpo-45792: Fix contextvar.Token's intersphinx FQN (GH-29533)
-Thursday                3.10               <a href=https://github.com/python/cpython/pull/29612>closed GH-29612</a>               [3.10] bpo-45835: Fix race condition in test_queue (GH-29601)
-Thursday                main               <a href=https://github.com/python/cpython/pull/29618>closed GH-29618</a>               [main] bpo-45837: Properly deprecate turtle.RawTurtle.settiltangle
-Thursday                main               <a href=https://github.com/python/cpython/pull/29260>closed GH-29260</a>               [main] bpo-45640: Tokens are now clickable
-Thursday                main               <a href=https://github.com/python/cpython/pull/29389>closed GH-29389</a>               [main] [doc] bpo-45680: Disambiguate ``__getitem__`` and ``__class_getitem__`` in the  data model.
-Thursday                 3.9               <a href=https://github.com/python/cpython/pull/29619>closed GH-29619</a>               [3.9] [doc] bpo-45680: Disambiguate ``__getitem__`` and ``__class_getitem__`` in the  data model (GH-29389)
-Thursday                3.10               <a href=https://github.com/python/cpython/pull/29620>closed GH-29620</a>               [3.10] [doc] bpo-45680: Disambiguate ``__getitem__`` and ``__class_getitem__`` in the  data model (GH-29389)
-Thursday                3.10               <a href=https://github.com/python/cpython/pull/29621>closed GH-29621</a>               [3.10] bpo-45640: [docs] Tokens are now clickable (GH-29260)
-Thursday                3.10               <a href=https://github.com/python/cpython/pull/29195>closed GH-29195</a>               [3.10] Expand about soft keywords in the docs for keyword.py (GH-29139)
-Thursday                3.10               <a href=https://github.com/python/cpython/pull/29152>closed GH-29152</a>               [3.10] bpo-44959: Add fallback to extension modules with '.sl' suffix on HP-UX (GH-27857)
-Thursday                3.10               <a href=https://github.com/python/cpython/pull/29509>closed GH-29509</a>               [3.10] bpo-45701:  Improve documentation for *typed* parameter (GH-29498)
-Thursday                 3.9               <a href=https://github.com/python/cpython/pull/29605>closed GH-29605</a>               [3.9] bpo-29620: iterate over a copy of sys.modules (GH-4800)
-Thursday                main               <a href=https://github.com/python/cpython/pull/29589>closed GH-29589</a>               [main] bpo-45429: Merge whatsnew about time.sleep
-Thursday                3.10               <a href=https://github.com/python/cpython/pull/29602>closed GH-29602</a>               [3.10] bpo-45826: Fix a crash in suggestions.c by checking for `traceback is None` (GH-29590)
-Thursday                 3.9               <a href=https://github.com/python/cpython/pull/29604>closed GH-29604</a>               [3.9] [docs] Add missing word "any" in unittest -k cmdline option description (GH-29571)
-Thursday                3.10               <a href=https://github.com/python/cpython/pull/29603>closed GH-29603</a>               [3.10] [docs] Add missing word "any" in unittest -k cmdline option description (GH-29571)
-Thursday                 3.9               <a href=https://github.com/python/cpython/pull/29584>closed GH-29584</a>               [3.9] bpo-45820: Fix a segfault when the parser fails without reading any input (GH-29580)
-Saturday                main               <a href=https://github.com/python/cpython/pull/29539>closed GH-29539</a>               [main] [doc] Clarify MRO precedence in descriptor super binding section
-Saturday                main               <a href=https://github.com/python/cpython/pull/29646>closed GH-29646</a>               [main] bpo-45848: Allow the parser to get error lines from encoded files
-Saturday                 3.9               <a href=https://github.com/python/cpython/pull/29657>closed GH-29657</a>               [3.9] bpo-45846: Fix capitalisation of Van Rossum at the start of sentence (GH-29641)
-Saturday                3.10               <a href=https://github.com/python/cpython/pull/29656>closed GH-29656</a>               [3.10] bpo-45846: Fix capitalisation of Van Rossum at the start of sentence (GH-29641)
-Saturday                main               <a href=https://github.com/python/cpython/pull/23230>closed GH-23230</a>               [main] bpo-42158: Add MIME types for n-triples, n-quads, n3 and trig
-Saturday                3.10               <a href=https://github.com/python/cpython/pull/29661>closed GH-29661</a>               [3.10] bpo-45848: Allow the parser to get error lines from encoded files (GH-29646)
-Friday                main               <a href=https://github.com/python/cpython/pull/29636>closed GH-29636</a>               [main] bpo-42238: [doc]: Hide false positive in make suspicious.
-Friday                3.10               <a href=https://github.com/python/cpython/pull/29629>closed GH-29629</a>               [3.10] bpo-45837: Note tiltangle is not deprecated, it's really settiltangle
-Friday                 3.9               <a href=https://github.com/python/cpython/pull/29630>closed GH-29630</a>               [3.9] bpo-45837: Note tiltangle is not deprecated, it's really settiltangle
-Friday                3.10               <a href=https://github.com/python/cpython/pull/29643>closed GH-29643</a>               [3.10] bpo-19072: Classmethod can wrap other classmethod like descriptors (GH-29634)
-Friday                 3.9               <a href=https://github.com/python/cpython/pull/29628>closed GH-29628</a>               [3.9] bpo-45838: Fix incorrect line numbers in Tools/gdb/libpython.py
-Friday                 3.9               <a href=https://github.com/python/cpython/pull/29640>closed GH-29640</a>               [3.9] bpo-45806: Fix recovery from stack overflow for 3.9. Again.
-Friday                main               <a href=https://github.com/python/cpython/pull/29634>closed GH-29634</a>               [main] bpo-19072: Classmethod can wrap other classmethod like descriptors. See  b83861f
-Friday                main               <a href=https://github.com/python/cpython/pull/29029>closed GH-29029</a>               [main] bpo-45507: EOFErrors should be thrown for truncated gzip members
+github ratelimit status is: RateLimit(core=Rate(reset=2021-12-08 19:36:59, remaining=4356, limit=5000))
+function 'format_blog_html_block' executed in 0.0006s
+
+Tuesday
+
+PR
+<li> <a href=https://github.com/python/cpython/pull/29537>closed GH-29537</a>  [3.8] bpo-45792: Fix contextvar.Token's intersphinx FQN (GH-29533)/li>
+
+Wednesday
+<li> <a href=https://github.com/python/cpython/pull/29571>closed GH-29571</a> [main] Add missing word in unittest docs./li>
+<li> <a href=https://github.com/python/cpython/pull/29590>closed GH-29590</a> [main] bpo-45826: Fix a crash in suggestions.c by checking for `traceback is None`/li>
+<li> <a href=https://github.com/python/cpython/pull/29596>closed GH-29596</a> [main] bpo-45831: _Py_DumpASCII() uses a single write() call if possible/li>
+<li> <a href=https://github.com/python/cpython/pull/29586>closed GH-29586</a> [3.10] bpo-45822: Respect PEP 263's coding cookies in the parser even if flags are not provided (GH-29582)./li>
+<li> <a href=https://github.com/python/cpython/pull/29598>closed GH-29598</a> [3.10] bpo-45831: _Py_DumpASCII() uses a single write() call if possible (GH-29596)/li>
+<li> <a href=https://github.com/python/cpython/pull/29600>closed GH-29600</a>  [3.9] bpo-42540: reallocation of id_mutex should not force default allocator (GH-29564)/li>
+<li> <a href=https://github.com/python/cpython/pull/29585>closed GH-29585</a>  [3.9] bpo-45822: Respect PEP 263's coding cookies in the parser even if flags are not provided (GH-29582)/li>
+<li> <a href=https://github.com/python/cpython/pull/29597>closed GH-29597</a>  [3.9] bpo-45831: _Py_DumpASCII() uses a single write() call if possible (GH-29596)/li>
+
+Thursday
+<li> <a href=https://github.com/python/cpython/pull/29618>closed GH-29618</a> [main] bpo-45837: Properly deprecate turtle.RawTurtle.settiltangle/li>
+<li> <a href=https://github.com/python/cpython/pull/29260>closed GH-29260</a> [main] bpo-45640: Tokens are now clickable/li>
+<li> <a href=https://github.com/python/cpython/pull/29389>closed GH-29389</a> [main] [doc] bpo-45680: Disambiguate ``__getitem__`` and ``__class_getitem__`` in the  data model./li>
+<li> <a href=https://github.com/python/cpython/pull/29589>closed GH-29589</a> [main] bpo-45429: Merge whatsnew about time.sleep/li>
+<li> <a href=https://github.com/python/cpython/pull/29612>closed GH-29612</a> [3.10] bpo-45835: Fix race condition in test_queue (GH-29601)/li>
+<li> <a href=https://github.com/python/cpython/pull/29620>closed GH-29620</a> [3.10] [doc] bpo-45680: Disambiguate ``__getitem__`` and ``__class_getitem__`` in the  data model (GH-29389)/li>
+<li> <a href=https://github.com/python/cpython/pull/29621>closed GH-29621</a> [3.10] bpo-45640: [docs] Tokens are now clickable (GH-29260)/li>
+<li> <a href=https://github.com/python/cpython/pull/29195>closed GH-29195</a> [3.10] Expand about soft keywords in the docs for keyword.py (GH-29139)/li>
+<li> <a href=https://github.com/python/cpython/pull/29152>closed GH-29152</a> [3.10] bpo-44959: Add fallback to extension modules with '.sl' suffix on HP-UX (GH-27857)/li>
+<li> <a href=https://github.com/python/cpython/pull/29509>closed GH-29509</a> [3.10] bpo-45701:  Improve documentation for *typed* parameter (GH-29498)/li>
+<li> <a href=https://github.com/python/cpython/pull/29602>closed GH-29602</a> [3.10] bpo-45826: Fix a crash in suggestions.c by checking for `traceback is None` (GH-29590)/li>
+<li> <a href=https://github.com/python/cpython/pull/29603>closed GH-29603</a> [3.10] [docs] Add missing word "any" in unittest -k cmdline option description (GH-29571)/li>
+<li> <a href=https://github.com/python/cpython/pull/29619>closed GH-29619</a>  [3.9] [doc] bpo-45680: Disambiguate ``__getitem__`` and ``__class_getitem__`` in the  data model (GH-29389)/li>
+<li> <a href=https://github.com/python/cpython/pull/29605>closed GH-29605</a>  [3.9] bpo-29620: iterate over a copy of sys.modules (GH-4800)/li>
+<li> <a href=https://github.com/python/cpython/pull/29604>closed GH-29604</a>  [3.9] [docs] Add missing word "any" in unittest -k cmdline option description (GH-29571)/li>
+<li> <a href=https://github.com/python/cpython/pull/29584>closed GH-29584</a>  [3.9] bpo-45820: Fix a segfault when the parser fails without reading any input (GH-29580)/li>
+
+Friday
+<li> <a href=https://github.com/python/cpython/pull/29636>closed GH-29636</a> [main] bpo-42238: [doc]: Hide false positive in make suspicious./li>
+<li> <a href=https://github.com/python/cpython/pull/29634>closed GH-29634</a> [main] bpo-19072: Classmethod can wrap other classmethod like descriptors. See  b83861f/li>
+<li> <a href=https://github.com/python/cpython/pull/29029>closed GH-29029</a> [main] bpo-45507: EOFErrors should be thrown for truncated gzip members/li>
+<li> <a href=https://github.com/python/cpython/pull/29629>closed GH-29629</a> [3.10] bpo-45837: Note tiltangle is not deprecated, it's really settiltangle/li>
+<li> <a href=https://github.com/python/cpython/pull/29643>closed GH-29643</a> [3.10] bpo-19072: Classmethod can wrap other classmethod like descriptors (GH-29634)/li>
+<li> <a href=https://github.com/python/cpython/pull/29630>closed GH-29630</a>  [3.9] bpo-45837: Note tiltangle is not deprecated, it's really settiltangle/li>
+<li> <a href=https://github.com/python/cpython/pull/29628>closed GH-29628</a>  [3.9] bpo-45838: Fix incorrect line numbers in Tools/gdb/libpython.py/li>
+<li> <a href=https://github.com/python/cpython/pull/29640>closed GH-29640</a>  [3.9] bpo-45806: Fix recovery from stack overflow for 3.9. Again./li>
+
+Saturday
+<li> <a href=https://github.com/python/cpython/pull/29539>closed GH-29539</a> [main] [doc] Clarify MRO precedence in descriptor super binding section/li>
+<li> <a href=https://github.com/python/cpython/pull/29646>closed GH-29646</a> [main] bpo-45848: Allow the parser to get error lines from encoded files/li>
+<li> <a href=https://github.com/python/cpython/pull/23230>closed GH-23230</a> [main] bpo-42158: Add MIME types for n-triples, n-quads, n3 and trig/li>
+<li> <a href=https://github.com/python/cpython/pull/29656>closed GH-29656</a> [3.10] bpo-45846: Fix capitalisation of Van Rossum at the start of sentence (GH-29641)/li>
+<li> <a href=https://github.com/python/cpython/pull/29661>closed GH-29661</a> [3.10] bpo-45848: Allow the parser to get error lines from encoded files (GH-29646)/li>
+<li> <a href=https://github.com/python/cpython/pull/29657>closed GH-29657</a>  [3.9] bpo-45846: Fix capitalisation of Van Rossum at the start of sentence (GH-29641)/li>
+
 
 Process finished with exit code 0
