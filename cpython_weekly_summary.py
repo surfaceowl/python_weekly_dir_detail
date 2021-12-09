@@ -81,6 +81,7 @@ def get_pull_requests_of_interest(pull_request_inputs):
                 and each_pull_request.merged_at is not None
             ):
                 # keep only PRs we are interested in
+                # PR's we closed
                 if (
                     each_pull_request.state == "closed"
                     and each_pull_request.merged_by.login in developer_ids
@@ -88,8 +89,19 @@ def get_pull_requests_of_interest(pull_request_inputs):
                     <= each_pull_request.merged_at
                     <= report_end_date
                 ):
-                    # TO DO: dump into list of dicts
                     pull_requests_of_interest.append(each_pull_request)
+
+                # PRs we authored
+                if (
+                    each_pull_request.state == "open"
+                    and each_pull_request.user in developer_ids
+                    and report_start_date
+                    <= each_pull_request.updated_at
+                    <= report_end_date
+                ):
+                    pull_requests_of_interest.append(each_pull_request)
+
+                # TO DO: how to get PRs we reviewed?
 
     return pull_requests_of_interest
 
@@ -105,26 +117,47 @@ def extract_friendly_report_info(pull_request_list):
     report_data = []
     for each_pull_request in pull_request_list:
 
+        # compute current_pr_action
+        if (
+            each_pull_request.merged_at is None
+            and each_pull_request.user.login in developer_ids
+            and each_pull_request.created_at >= report_start_date
+        ):
+            current_pr_action = "authored"
+
+        if (
+            each_pull_request.merged_at is None
+            and each_pull_request.assignee in developer_ids
+            and each_pull_request.updated_at >= report_start_date
+            and each_pull_request.comments >= 1
+        ):
+            current_pr_action = "reviewed"
+
+        if (
+            report_start_date <= each_pull_request.merged_at <= report_end_date
+            and each_pull_request.merged_by.login in developer_ids
+        ):
+            current_pr_action = "closed"
+
         # create concise text and HTML link for this PR
-        link_text = f"closed GH-{each_pull_request.number}"
+        link_text = f"{current_pr_action} GH-{each_pull_request.number}"
+
         # use html_url attribute for human friendly link,
-        # vs api link at url attribute
         link_url = f"<a href={each_pull_request.html_url}>{link_text}</a>"
 
         # create friendly PR title for blog; trap for missing data
         if each_pull_request.base.ref is None:
             friendly_title = each_pull_request.title
 
+        # add python version to title if not there already
         elif each_pull_request.base.ref not in each_pull_request.title:
-            # add python version to title if not there already
-            friendly_title = (
-                f"[{each_pull_request.base.ref}] {each_pull_request.title}"
-            )
+            friendly_title = f"[{each_pull_request.base.ref}] {each_pull_request.title}"
 
         else:
             friendly_title = each_pull_request.title
 
         potential_duplicate_pr_ref_num = f"(GH-{each_pull_request.number})"
+
         if potential_duplicate_pr_ref_num in friendly_title:
             friendly_title.replace(each_pull_request.number, "")
 
@@ -133,6 +166,7 @@ def extract_friendly_report_info(pull_request_list):
                 (
                     f"{each_pull_request.merged_at}",
                     "PR",
+                    current_pr_action,
                     f"{each_pull_request.base.ref:>6}",
                     f"{link_url}",
                     f"{friendly_title}",
@@ -146,7 +180,7 @@ def extract_friendly_report_info(pull_request_list):
     # inner sort = branch name (descending)
     report_data = sorted(
         sorted(
-            sorted(report_data, key=lambda key2: key2[2], reverse=True),
+            sorted(report_data, key=lambda key3: key3[2], reverse=True),
             key=lambda key1: key1[1],
         ),
         key=lambda key0: datetime.datetime.fromisoformat(key0[0]).date(),
@@ -170,6 +204,8 @@ def format_blog_html_block(report_data):
     for report_item in report_data:
         current_day = datetime.datetime.fromisoformat(report_item[0]).date()
         current_work_product = report_item[1]
+        final_url = report_item[4]
+        draft_title = report_item[5]
 
         # insert section row for each time the day changes
         if current_day != last_day_used:
@@ -177,7 +213,7 @@ def format_blog_html_block(report_data):
             report_output.append(f"{current_day.strftime('%A')}")
             last_day_used = current_day
 
-        # insert section row each time the word product changes
+        # insert section row each time the work product changes
         if current_work_product != last_work_product_used:
             report_output.append("")
             report_output.append(f"{current_work_product}")
@@ -185,12 +221,12 @@ def format_blog_html_block(report_data):
 
         # check spacing in item title, so branch names line up neatly
         # fixes branch names <= [3.9]; [main], [3.10] and beyond have same len()
-        if report_item[4][5] != "]":
-            formatted_title = report_item[4].rjust(len(report_item[4]) + 1)
+        if report_item[5][5] != "]":
+            final_title = draft_title.rjust(len(draft_title) + 1)
         else:
-            formatted_title = report_item[4]
+            final_title = draft_title
 
-        report_output.append(f"<li> {report_item[3]} {formatted_title}/li>")
+        report_output.append(f"<li> {final_url} {final_title}/li>")
 
     # END for loop - add blank line at end of table
     report_output.append("")
