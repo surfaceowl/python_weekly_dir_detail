@@ -14,7 +14,7 @@ def test_anonymous_github_access_works():
     """tests that user can access GitHub with provided user auth token
     anonymous GitHub access limits queries to 60 per hour, vs 5,000 per hour with token
     """
-    anonymous_rate = Github(os.environ.get("GITHUB_ACCESS_TOKEN")).rate_limiting[1]
+    anonymous_rate = Github(os.environ.get("MISSING_TOKEN")).rate_limiting[1]
     assert anonymous_rate == 60
 
 
@@ -25,4 +25,3 @@ def test_authenticated_github_access_works():
     """
     authenticated_rate = Github(os.environ.get("GITHUB_ACCESS_TOKEN")).rate_limiting[1]
     assert authenticated_rate == 5000
-

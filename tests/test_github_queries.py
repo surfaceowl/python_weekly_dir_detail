@@ -25,21 +25,58 @@ from cpython_weekly_summary import pull_requests_all
 from cpython_weekly_summary import get_pull_requests_of_interest
 
 
-def test_get_pull_requests_of_interest_PR29537():
+def test_get_one_closed_pr29537():
     """
     Tuesday 16 Nov - one PR was closed per dev blog at:
     https://lukasz.langa.pl/4f7c2091-2a74-48ab-99d7-8521c4fa8363/
     expected PR:  https://github.com/python/cpython/pull/29537
     """
     # set dates for this test
-    start_date = datetime.datetime(2021, 11, 16)
-    end_date = datetime.datetime(2021, 11, 16)
+    start_date = datetime.datetime(2021, 11, 16, 00, 00, 00)
+    end_date = datetime.datetime(2021, 11, 16, 23, 59, 59)
 
     list_with_pull_report_29537 = [repo.get_pull(29537)]
 
-    pull_reports_we_care_about, pull_requests_reviewed = get_pull_requests_of_interest(
+    closed_pr_we_care_about, pull_requests_reviewed = get_pull_requests_of_interest(
         list_with_pull_report_29537, start_date, end_date
     )
 
-    expected_pr = pull_reports_we_care_about[0]
-    assert expected_pr.number == 29537
+    assert closed_pr_we_care_about[0].number == 29537
+
+
+def test_get_one_authored_pr28044():
+    """
+    Monday 30 Aug - one PR was authored per dev blog at:
+    https://lukasz.langa.pl/94b5086c-81df-498a-9f8b-f9e06f5d9538/
+    expected PR:  https://github.com/python/cpython/pull/28044
+    """
+    # set dates for this test
+    start_date = datetime.datetime(2021, 8, 30, 00, 00, 00)
+    end_date = datetime.datetime(2021, 8, 30, 23, 59, 59)
+
+    list_with_pull_report = [repo.get_pull(28044)]
+
+    authored_pr_we_care_about, pull_requests_reviewed = get_pull_requests_of_interest(
+        list_with_pull_report, start_date, end_date
+    )
+
+    assert authored_pr_we_care_about[0].number == 28044
+
+
+def test_get_one_reviewed_pr28089():
+    """
+    Tuesday 31 Aug - one PR was reviewed per dev blog at:
+    https://lukasz.langa.pl/94b5086c-81df-498a-9f8b-f9e06f5d9538/
+    expected PR:  https://github.com/python/cpython/pull/28089
+    """
+    # set dates for this test
+    start_date = datetime.datetime(2021, 8, 31, 00, 00, 00)
+    end_date = datetime.datetime(2021, 8, 31, 23, 59, 59)
+
+    list_with_pull_report = [repo.get_pull(28089)]
+
+    authored_pr_we_care_about, pull_requests_reviewed = get_pull_requests_of_interest(
+        list_with_pull_report, start_date, end_date
+    )
+
+    assert authored_pr_we_care_about[0].number == 28089

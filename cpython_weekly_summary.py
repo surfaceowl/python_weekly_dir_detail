@@ -117,7 +117,7 @@ def get_pull_requests_of_interest(
                 and each_pull_request.merged_at is not None
             ):
                 # keep only PRs we are interested in
-                # PR's we closed
+                # PR's we merged
                 if (
                     each_pull_request.state == "closed"
                     and report_start_date
@@ -129,20 +129,19 @@ def get_pull_requests_of_interest(
 
                 # PRs we authored
                 elif (
-                    each_pull_request.state == "open"
-                    and report_start_date
+                    report_start_date
                     <= each_pull_request.updated_at
                     <= report_end_date
-                    and each_pull_request.user in developer_ids
+                    and each_pull_request.user.login in developer_ids
                 ):
                     pull_requests_of_interest.append(each_pull_request)
 
                 # get PRs we reviewed by parsing pull comments by developer_id
+                # reviews apply to both open PRs, and PRs closed by anyone
                 # requires returning separate list of 'reviewed' PRs, so
                 # we don't have to process again
                 elif (
-                    each_pull_request.state == "open"
-                    and report_start_date
+                    report_start_date
                     <= each_pull_request.updated_at
                     <= report_end_date
                     and each_pull_request.comments >= 1  # defer expensive requests call
