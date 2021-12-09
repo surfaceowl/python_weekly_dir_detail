@@ -1,4 +1,5 @@
 PyGithub==1.55      # utilities for parsing github
 pytest==6.2.5
 matplotlib
-black==21.11b1
+black==21.12b0
+requests==2.26.0

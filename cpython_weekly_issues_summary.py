@@ -69,8 +69,7 @@ def format_issues(input_issues):
             branch_name = str(issue.title).split(" ", 2)[0]
 
         match issue.state:
-            case
-            "open":
+            case "open":
                 # issues we authored
                 if issue.user.login in developer_ids \
                         and issue.updated_at >= report_start_date:

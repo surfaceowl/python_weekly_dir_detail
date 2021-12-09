@@ -1,0 +1,51 @@
+function 'get_pull_requests_of_interest' executed in 1160.5946s
+function 'extract_friendly_report_info' executed in 0.0010s
+github ratelimit status is: RateLimit(core=Rate(reset=2021-12-09 02:55:17, remaining=4173, limit=5000))
+function 'format_blog_html_block' executed in 0.0000s
+
+Monday
+
+PR
+<li> <a href=https://github.com/python/cpython/pull/28075>closed GH-28075</a> [main] bpo-44756: Remove misleading NEWS entries of a change that was reverted before release/li>
+<li> <a href=https://github.com/python/cpython/pull/28071>closed GH-28071</a>  [3.9] bpo-43913: Fix bugs in cleaning up classes and modules in unitt…/li>
+<li> <a href=https://github.com/python/cpython/pull/28006>closed GH-28006</a> [main] bpo-43913: Fix bugs in cleaning up classes and modules in unittest./li>
+<li> <a href=https://github.com/python/cpython/pull/28065>closed GH-28065</a>  [3.9] bpo-41620: TestCase.run() now always return a TestResult instance (GH-28030)/li>
+<li> <a href=https://github.com/python/cpython/pull/28039>closed GH-28039</a> [3.10] bpo-45007: Update to OpenSSL 1.1.1l in Windows build and CI (GH-28009)/li>
+<li> <a href=https://github.com/python/cpython/pull/28030>closed GH-28030</a> [main] bpo-41620: TestCase.run() now always return a TestResult instance/li>
+<li> <a href=https://github.com/python/cpython/pull/28063>closed GH-28063</a>  [3.8] bpo-45007: Update multissl to openssl 1.1.1l as well (GH-28044)/li>
+<li> <a href=https://github.com/python/cpython/pull/28062>closed GH-28062</a>  [3.9] bpo-45007: Update multissl to openssl 1.1.1l as well (GH-28044)/li>
+<li> <a href=https://github.com/python/cpython/pull/28059>closed GH-28059</a>  [3.8] bpo-45007: Update macOS installer builds to use OpenSSL 1.1.1l (GH-28051)/li>
+<li> <a href=https://github.com/python/cpython/pull/28053>closed GH-28053</a>  [3.9] bpo-44689: ctypes.util.find_library() now finds macOS 11+ system libraries when built on older macOS systems (GH-27251)/li>
+<li> <a href=https://github.com/python/cpython/pull/28054>closed GH-28054</a>  [3.8] bpo-44689: ctypes.util.find_library() now finds macOS 11+ system libraries when built on older macOS systems (GH-27251)/li>
+
+Tuesday
+<li> <a href=https://github.com/python/cpython/pull/28095>closed GH-28095</a> [main] bpo-44135: [docs] fix inline markup/li>
+<li> <a href=https://github.com/python/cpython/pull/28094>closed GH-28094</a>  [3.9] bpo-44135: Refine explanation of how passing tuples to issubclass() behaves (GH-26193)/li>
+<li> <a href=https://github.com/python/cpython/pull/26193>closed GH-26193</a> [main] bpo-44135: issubclass documentation doesn't explain tuple semantic/li>
+
+Thursday
+<li> <a href=https://github.com/python/cpython/pull/27941>closed GH-27941</a> [main] bpo-43613: Faster implementation of gzip.compress and gzip.decompress/li>
+<li> <a href=https://github.com/python/cpython/pull/28129>closed GH-28129</a> [main] bpo-45082: Cleanup ctypes.c_buffer alias/li>
+<li> <a href=https://github.com/python/cpython/pull/28117>closed GH-28117</a> [main] bpo-45085: Remove the binhex module/li>
+<li> <a href=https://github.com/python/cpython/pull/28132>closed GH-28132</a>  [3.9] bpo-45081: Fix __init__ method generation when inheriting from Protocol (GH-28121)/li>
+<li> <a href=https://github.com/python/cpython/pull/28126>closed GH-28126</a> [3.10] [doc] Link to deprecation policy PEP from the DeprecationWarning documentation (GH-28123)/li>
+<li> <a href=https://github.com/python/cpython/pull/28121>closed GH-28121</a> [main] bpo-45081: Fix __init__ method generation when inheriting from Protocol/li>
+<li> <a href=https://github.com/python/cpython/pull/27792>closed GH-27792</a> [main] Add missing sentinel obj reference to dataclasses documentation/li>
+<li> <a href=https://github.com/python/cpython/pull/28124>closed GH-28124</a>  [3.9] [doc] Link to deprecation policy PEP from the DeprecationWarning documentation (GH-28123)/li>
+<li> <a href=https://github.com/python/cpython/pull/28122>closed GH-28122</a> [main] bpo-40360: [doc] Rephrase deprecation note about lib2to3/li>
+<li> <a href=https://github.com/python/cpython/pull/28123>closed GH-28123</a> [main] [doc] Link to deprecation policy PEP from the DeprecationWarning documentation/li>
+<li> <a href=https://github.com/python/cpython/pull/28109>closed GH-28109</a> [main] bpo-45056: Remove trailing unused constants from co_consts/li>
+<li> <a href=https://github.com/python/cpython/pull/28118>closed GH-28118</a> [main] bpo-37330: open() no longer accept 'U' in file mode/li>
+<li> <a href=https://github.com/python/cpython/pull/28116>closed GH-28116</a> [main] bpo-40360: Deprecate the lib2to3 package/li>
+
+Friday
+<li> <a href=https://github.com/python/cpython/pull/28119>closed GH-28119</a> [main] bpo-45083: Include the exception class qualname when formatting an ex…/li>
+<li> <a href=https://github.com/python/cpython/pull/27309>closed GH-27309</a> [main] bpo-34602: Quadruple stack size on macOS when compiling with UBSAN/li>
+<li> <a href=https://github.com/python/cpython/pull/28145>closed GH-28145</a>  [3.9] bpo-42255: Update webbrowser doc/li>
+<li> <a href=https://github.com/python/cpython/pull/28144>closed GH-28144</a> [3.10] bpo-42255: Update webbrowser doc/li>
+<li> <a href=https://github.com/python/cpython/pull/28001>closed GH-28001</a>  [3.8] bpo-45022: Pin current libffi build to fixed version in preparation for upcoming update (GH-27982)/li>
+<li> <a href=https://github.com/python/cpython/pull/28135>closed GH-28135</a>  [3.9] bpo-45083: Include the exception class qualname when formatting an exception (GH-28119)/li>
+<li> <a href=https://github.com/python/cpython/pull/27837>closed GH-27837</a> [main] bpo-42255: Deprecate webbrowser.MacOSX from Python 3.11/li>
+
+
+Process finished with exit code 0
