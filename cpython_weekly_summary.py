@@ -11,32 +11,37 @@ import requests
 import github.GithubException
 from github import Github
 
+logging.basicConfig(encoding="utf-8", level=logging.DEBUG)
+
 # setup search parameters
 github_host = Github(os.environ.get("GITHUB_ACCESS_TOKEN"))  # must be set in env var
 repo = github_host.get_repo("python/cpython")  # target repo
 developer_ids = ["ambv"]  # list in case you want more than one
-report_start_date = datetime.datetime(2021, 8, 30)  # change this 11/15
-report_end_date = datetime.datetime(2021, 9, 5)  # change this  11/21
 
-logging.basicConfig(encoding="utf-8", level=logging.WARNING)
 # no date filter on get_pulls() method yet; state inputs must be single string
 # get all PRs, so we can capture closed, merged and reviewed together
 # sort via updated in reverse order; so we can stop iterating over API and
 # stay below our API rate limit
+github_ratelimit = github_host.get_rate_limit()
+logging.info(f"github ratelimit status is: {github_ratelimit}")
+
+
 pull_requests_all = repo.get_pulls(state="all", sort="updated", direction="descending")
 pull_reports_we_care_about = []
 final_summary = []
-github_ratelimit = github_host.get_rate_limit()
 
 
-def timer_decorator(func):
+def timer_decorator(function):
     # This function shows the execution time of
     # the function object passed
     def wrap_func(*args, **kwargs):
         time_start = time()
-        result = func(*args, **kwargs)
+        result = function(*args, **kwargs)
         time_done = time()
-        print(f"function {func.__name__!r} executed in {(time_done - time_start):.4f}s")
+        logging.info(
+            f"function {function.__name__!r} executed in"
+            f" {(time_done - time_start):.4f}s"
+        )
         return result
 
     return wrap_func
@@ -48,11 +53,15 @@ def create_date_object(input_standard_date_string):
 
 
 @timer_decorator
-def get_pull_requests_of_interest(pull_request_inputs):
+def get_pull_requests_of_interest(
+    pull_request_inputs, report_start_date, report_end_date
+):
     """
     filters all PRs in the repo for the one's we care about
     driven by repo name; developer ids of interest and start/end dates
-    :param pull_request_inputs:
+    :param pull_request_inputs: all PRs pulled from GitHub API
+    :param report_start_date: beginning of reporting period for local filtering
+    :param report_end_date: end of reporting period for local filtering
     :return: pull_requests_of_interest; list of tuples - all PR detail
     :return: reviewed_pull_requests; list of ints; PR numbers that were reviewed only
     """
@@ -77,10 +86,13 @@ def get_pull_requests_of_interest(pull_request_inputs):
         return developer_commented
 
     # setup
-    logging.info(f"github ratelimit status is: {github_ratelimit}")
     pull_requests_of_interest = []
     pull_requests_reviewed_inner = []
     pull_processed_counter = 0
+
+    logging.info(f"github ratelimit status is: {github_ratelimit}")
+    logging.info(f"report_start_date: {report_start_date}")
+    logging.info(f"report_end_date: {report_end_date}")
 
     for each_pull_request in pull_request_inputs:
         if each_pull_request.updated_at < report_start_date:
@@ -139,20 +151,26 @@ def get_pull_requests_of_interest(pull_request_inputs):
                         pull_requests_of_interest.append(each_pull_request)
                         pull_requests_reviewed_inner.append(each_pull_request.number)
 
-    print("\n")
-    print("PRs reviewed / found through comments search")
-    for item in pull_requests_reviewed_inner:
-        print(item)
+    logging.info("PRs reviewed / found through comments search")
+    for pr_in_list in pull_requests_reviewed_inner:
+        logging.info(pr_in_list)
     return pull_requests_of_interest, pull_requests_reviewed_inner
 
 
 @timer_decorator
-def extract_friendly_report_info(interesting_pull_requests, reviewed_pull_requests):
+def extract_friendly_report_info(
+    interesting_pull_requests,
+    reviewed_pull_requests,
+    report_start_date,
+    report_end_date,
+):
     """
     extracts and formats key fields into copy/paste ready text block
     to drop into the weekly blog report
     :param interesting_pull_requests: list of tuples, subset of PRs we care about
     :param reviewed_pull_requests: list of ints, PR #s confirmed by comment text
+    :param report_start_date: beginning of reporting period for local filtering
+    :param report_end_date: end of reporting period for local filtering
     :return: report_data; list of lists we can easily print
     """
     report_data = []
@@ -272,29 +290,36 @@ def format_blog_html_block(report_data):
     return report_output
 
 
-# merge results for different sets of pull requests
-# for pull_request_group in pull_requests_all:
-try:
-    pull_reports_we_care_about, pull_requests_reviewed = get_pull_requests_of_interest(
-        pull_requests_all
-    )
-    final_summary = extract_friendly_report_info(
-        pull_reports_we_care_about, pull_requests_reviewed
-    )
-except github.RateLimitExceededException:
-    logging.error(f"github rate limit exceeded", github.RateLimitExceededException)
-except github.GithubException as error:
-    logging.error(f"a server error occurred {error}")
-except IndexError as error:
-    logging.error(error)
+if __name__ == "__main__":
 
-logging.info(f"github ratelimit status is: {github_ratelimit}")
+    # input dates of interest
+    start_date = datetime.datetime(2021, 8, 30)  # change this 11/15
+    end_date = datetime.datetime(2021, 9, 5)  # change this  11/21
 
-# nice formatting
-final_summary = format_blog_html_block(final_summary)
+    # merge results for different sets of pull requests
+    # for pull_request_group in pull_requests_all:
+    try:
+        (
+            pull_reports_we_care_about,
+            pull_requests_reviewed,
+        ) = get_pull_requests_of_interest(pull_requests_all, start_date, end_date)
+        final_summary = extract_friendly_report_info(
+            pull_reports_we_care_about, pull_requests_reviewed, start_date, end_date
+        )
+    except github.RateLimitExceededException:
+        logging.error(f"github rate limit exceeded", github.RateLimitExceededException)
+    except github.GithubException as error:
+        logging.error(f"a server error occurred {error}")
+    except IndexError as error:
+        logging.error(error)
 
-for item in final_summary:
-    print(item)  # cut the branch name from prefix to mirror current blog format
+    logging.info(f"github ratelimit status is: {github_ratelimit}")
 
+    # nice formatting
+    final_summary = format_blog_html_block(final_summary)
 
-print(f"github ratelimit status is: {github_ratelimit}")
+    for item in final_summary:
+        logging.info(item)  # cut the branch name from prefix to mirror current blog
+        # format
+
+    logging.info(f"github ratelimit status is: {github_ratelimit}")
