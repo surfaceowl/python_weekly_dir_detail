@@ -2,7 +2,6 @@
 module to pull select issue data from GitHub for cpython Developer In Residence weekly 
 """
 import datetime
-import dateutil.parser
 import logging
 
 from config import developer_ids
@@ -20,32 +19,38 @@ def filter_issues(input_issues):
     :return: list of combined issues
     """
     logging.info("begin filter_issues")
-
-    issues_opened = []
-    issues_closed = []
+    issues_opened, issues_closed, issued_combined = [], [], []
 
     for issue in input_issues:
-        if issue.state == "closed":
-            if (
-                issue.closed_by.login in developer_ids
-                and start_date
-                <= dateutil.parser.parse(issue.last_modified).replace(tzinfo=None)
-                <= (end_date + datetime.timedelta(days=1))
-            ):
-                issues_closed.append(issue)
+        # simplify condition names
+        if issue.last_modified is None:
+            date_to_consider = issue.created_at
         else:
-            if (
-                issue.state == "open"
-                and issue.user.login in developer_ids
-                and start_date
-                <= dateutil.parser.parse(issue.last_modified).replace(tzinfo=None)
-                <= (end_date + datetime.timedelta(days=1))
-            ):
+            date_to_consider = issue.last_modified
+
+        interesting_date_range = bool(
+            start_date <= date_to_consider <= (end_date + datetime.timedelta(days=1))
+        )
+
+        interesting_owner = bool(issue.user.login in developer_ids)
+
+        if issue.closed_by is None:
+            interesting_closer = False
+        else:
+            interesting_closer = bool(issue.closed_by.login in developer_ids)
+
+        # filter stuff we want to keep
+        if interesting_date_range:
+            if issue.state == "closed" and (interesting_owner or interesting_closer):
                 issues_opened.append(issue)
+            elif issue.state == "open" and interesting_owner:
+                issues_opened.append(issue)
+            else:
+                continue
 
-    combined_issues = sorted(issues_opened + issues_closed, key=lambda x: x.updated_at)
+    issues_combined = sorted(issues_opened + issues_closed, key=lambda x: x.updated_at)
 
-    return combined_issues
+    return issues_combined
 
 
 def format_issues(input_issues):
@@ -55,12 +60,14 @@ def format_issues(input_issues):
     :return: list of tuples containing reformatted key output fields
     """
     logging.info("beginning format issues")
-    report_issues = []
+    issues_summary = []
+
+    len(input_issues)
 
     for issue in input_issues:
 
         # determine branch based on common PR naming pattern with [X.Y] branch prefix
-        if "[3." not in issue.title:
+        if "[main]" in issue.title or "[3." not in issue.title:
             branch_name = "[main]"
         else:
             branch_name = str(issue.title).split(" ", 2)[0]
@@ -69,7 +76,7 @@ def format_issues(input_issues):
             case "open":
                 # issues we authored
                 if issue.user.login in developer_ids and issue.updated_at >= start_date:
-                    report_issues.append(
+                    issues_summary.append(
                         tuple(
                             (
                                 f"{issue.updated_at}",
@@ -82,28 +89,10 @@ def format_issues(input_issues):
                         )
                     )
 
-                # issues we reviewed
-                if issue.user.login in developer_ids and issue.updated_at >= start_date:
-                    report_issues.append(
-                        tuple(
-                            (
-                                f"{issue.updated_at}",
-                                "Issue",
-                                "reviewed",
-                                f"{branch_name.rjust(6)}",
-                                f"{issue.url}",
-                                f"{issue.title}",
-                            )
-                        )
-                    )
-
             # issues we closed
             case "closed":
-                if (
-                    issue.closed_by.login in developer_ids
-                    and issue.updated_at >= start_date
-                ):
-                    report_issues.append(
+                if issue.closed_by.login in developer_ids:
+                    issues_summary.append(
                         tuple(
                             (
                                 f"{issue.closed_at}",
@@ -115,7 +104,10 @@ def format_issues(input_issues):
                             )
                         )
                     )
-        return report_issues
+        # END match
+    # END for issue in input_issues
+
+    return issues_summary
 
 
 if __name__ == "__main__":
