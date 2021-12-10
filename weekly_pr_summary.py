@@ -1,7 +1,9 @@
-# script to pull select data from GitHub for cpython Developer In Residence
-# weekly reporting.
-# collect final results in a list, to make html ready lines to drop into the weekly blog
-# requires env var:  GITHUB_ACCESS_TOKEN, a valid access token from your GitHub account
+"""
+module pulls select data from GitHub for cpython Developer In Residence
+weekly reporting. collect final results in a list, to make html ready lines to
+drop into the weekly blog
+requires env var:  GITHUB_ACCESS_TOKEN, a valid access token from your GitHub account
+"""
 import datetime
 import logging
 
@@ -16,7 +18,7 @@ logging.basicConfig(encoding="utf-8", level=logging.WARNING)
 
 @timer_decorator
 def get_pull_requests_of_interest(
-        pull_request_inputs, developer_ids, report_start_date, report_end_date
+    pull_request_inputs, developer_ids, report_start_date, report_end_date
 ):
     """
     filters all PRs in the repo for the one's we care about
@@ -30,7 +32,6 @@ def get_pull_requests_of_interest(
     """
 
     logging.info("begin pulling prs of interest")
-
 
     def developer_wrote_comments(pr_number):
         """
@@ -79,24 +80,24 @@ def get_pull_requests_of_interest(
                     f"{user}  "
                 )
             if (
-                    each_pull_request.merged_by is not None
-                    and each_pull_request.merged_at is not None
+                each_pull_request.merged_by is not None
+                and each_pull_request.merged_at is not None
             ):
                 # keep only PRs we are interested in
                 # PR's we merged
                 if (
-                        each_pull_request.state == "closed"
-                        and report_start_date
-                        <= each_pull_request.merged_at
-                        <= (report_end_date + datetime.timedelta(days=2))
-                        and each_pull_request.merged_by.login in developer_ids
+                    each_pull_request.state == "closed"
+                    and report_start_date
+                    <= each_pull_request.merged_at
+                    <= (report_end_date + datetime.timedelta(days=2))
+                    and each_pull_request.merged_by.login in developer_ids
                 ):
                     pull_requests_of_interest.append(each_pull_request)
 
                 # PRs we authored
                 elif (
-                        report_start_date <= each_pull_request.updated_at <= report_end_date
-                        and each_pull_request.user.login in developer_ids
+                    report_start_date <= each_pull_request.updated_at <= report_end_date
+                    and each_pull_request.user.login in developer_ids
                 ):
                     pull_requests_of_interest.append(each_pull_request)
 
@@ -105,12 +106,12 @@ def get_pull_requests_of_interest(
                 # requires returning separate list of 'reviewed' PRs, so
                 # we don't have to process again
                 elif (
-                        report_start_date
-                        <= each_pull_request.updated_at
-                        <= (report_end_date + datetime.timedelta(days=3))
-                        # added buffer for PRs updated after review by others
-                        and each_pull_request.comments >= 1
-                # defer expensive requests call
+                    report_start_date
+                    <= each_pull_request.updated_at
+                    <= (report_end_date + datetime.timedelta(days=3))
+                    # added buffer for PRs updated after review by others
+                    and each_pull_request.comments >= 1
+                    # defer expensive requests call
                 ):
                     if developer_wrote_comments(each_pull_request.number) is True:
                         pull_requests_of_interest.append(each_pull_request)
@@ -120,9 +121,13 @@ def get_pull_requests_of_interest(
 
 
 @timer_decorator
-def extract_friendly_report_info(interesting_pull_requests, reviewed_pull_requests,
-                                 developer_ids, report_start_date,
-                                 report_end_date):
+def extract_friendly_report_info(
+    interesting_pull_requests,
+    reviewed_pull_requests,
+    developer_ids,
+    report_start_date,
+    report_end_date,
+):
     """
     extracts and formats key fields into copy/paste ready text block
     to drop into the weekly blog report
@@ -143,9 +148,9 @@ def extract_friendly_report_info(interesting_pull_requests, reviewed_pull_reques
         current_pr_action = None
 
         if (
-                each_pull_request.merged_at is None
-                and each_pull_request.user.login in developer_ids
-                and each_pull_request.created_at >= report_start_date
+            each_pull_request.merged_at is None
+            and each_pull_request.user.login in developer_ids
+            and each_pull_request.created_at >= report_start_date
         ):
             current_pr_action = "authored"
 
@@ -153,10 +158,16 @@ def extract_friendly_report_info(interesting_pull_requests, reviewed_pull_reques
             current_pr_action = "reviewed"
 
         elif (
-                report_start_date <= each_pull_request.merged_at <= report_end_date
-                and each_pull_request.merged_by.login in developer_ids
+            report_start_date <= each_pull_request.closed_at <= report_end_date
+            and each_pull_request.merged_by.login in developer_ids
         ):
             current_pr_action = "closed"
+
+        elif (
+            report_start_date <= each_pull_request.merged_at <= report_end_date
+            and each_pull_request.merged_by.login in developer_ids
+        ):
+            current_pr_action = "merged"
 
         # create concise text and HTML link for this PR
         link_text = f"{current_pr_action} GH-{each_pull_request.number}"
@@ -274,9 +285,13 @@ def get_final_summary(pull_requests, developer_ids, start_date, end_date):
             pull_requests, developer_ids, start_date, end_date
         )
 
-        summary = extract_friendly_report_info(pull_reports_we_care_about,
-                                               pull_requests_reviewed, "ambv",
-                                               start_date, end_date)
+        summary = extract_friendly_report_info(
+            pull_reports_we_care_about,
+            pull_requests_reviewed,
+            "ambv",
+            start_date,
+            end_date,
+        )
 
         final_summary = format_blog_html_block(summary)
 

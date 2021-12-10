@@ -13,7 +13,7 @@ between date ranges to pull less, but that is client-side responsibility
 import datetime
 
 from weekly_pr_summary import get_pull_requests_of_interest
-from main import repo
+from config import repo
 
 
 def test_get_one_closed_pr29537():
