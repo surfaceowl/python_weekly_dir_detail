@@ -11,18 +11,9 @@ between date ranges to pull less, but that is client-side responsibility
 """
 
 import datetime
-import logging
-import os
-import requests
 
-import github.GithubException
-from github import Github
-
-from cpython_weekly_summary import github_host
-from cpython_weekly_summary import repo
-from cpython_weekly_summary import developer_ids
-from cpython_weekly_summary import pull_requests_all
-from cpython_weekly_summary import get_pull_requests_of_interest
+from weekly_pr_summary import get_pull_requests_of_interest
+from main import repo
 
 
 def test_get_one_closed_pr29537():
@@ -38,7 +29,7 @@ def test_get_one_closed_pr29537():
     list_with_pull_report_29537 = [repo.get_pull(29537)]
 
     closed_pr_we_care_about, pull_requests_reviewed = get_pull_requests_of_interest(
-        list_with_pull_report_29537, start_date, end_date
+        list_with_pull_report_29537, "ambv", start_date, end_date
     )
 
     assert closed_pr_we_care_about[0].number == 29537
@@ -57,7 +48,7 @@ def test_get_one_authored_pr28044():
     list_with_pull_report = [repo.get_pull(28044)]
 
     authored_pr_we_care_about, pull_requests_reviewed = get_pull_requests_of_interest(
-        list_with_pull_report, start_date, end_date
+        list_with_pull_report, "ambv", start_date, end_date
     )
 
     assert authored_pr_we_care_about[0].number == 28044
@@ -76,7 +67,7 @@ def test_get_one_reviewed_pr28089():
     list_with_pull_report = [repo.get_pull(28089)]
 
     authored_pr_we_care_about, pull_requests_reviewed = get_pull_requests_of_interest(
-        list_with_pull_report, start_date, end_date
+        list_with_pull_report, "ambv", start_date, end_date
     )
 
     assert authored_pr_we_care_about[0].number == 28089
@@ -120,7 +111,7 @@ def test_all_prs_on_16nov_search_by_list_of_pr():
 
     # pull results using our functions
     pr_we_care_about, pull_requests_reviewed = get_pull_requests_of_interest(
-        pull_requests_targeted, start_date, end_date
+        pull_requests_targeted, "ambv", start_date, end_date
     )
 
     pr_numbers_found = [pr.number for pr in pr_we_care_about]

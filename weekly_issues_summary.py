@@ -10,6 +10,8 @@ import os
 
 from github import Github
 
+logging.basicConfig(encoding="utf-8", level=logging.WARNING)
+
 # setup search parameters
 github_host = Github(os.environ.get("GITHUB_ACCESS_TOKEN"))  # must be set in env var
 repo = github_host.get_repo("python/cpython")  # target repo
@@ -21,10 +23,9 @@ github_ratelimit = github_host.get_rate_limit()
 print(f"github ratelimit status is: {github_ratelimit}")
 
 # pull all issues, filter down to report date start
-all_issues = repo.get_issues(state="all",
-                             since=report_start_date,
-                             sort="updated",
-                             direction="asc")
+all_issues = repo.get_issues(
+    state="all", since=report_start_date, sort="updated", direction="asc"
+)
 counter = 0
 opened_by_ambv = 0
 closed_by_ambv = 0
@@ -34,10 +35,17 @@ print(f"github ratelimit status is: {github_ratelimit}")
 
 
 def filter_issues(input_issues):
+    """
+    filter and sort issues and prs
+    :param input_issues:
+    :return: list of combined issues
+    """
+    logging.info("begin filter_issues")
+
     issues_opened = []
     issues_closed = []
     combined_issues = []
-    
+
     for issue in all_issues:
         if issue.state == "closed":
             if issue.closed_by.login in developer_ids:
@@ -47,8 +55,8 @@ def filter_issues(input_issues):
                 if issue.user.login in developer_ids:
                     issues_opened.append(issue)
 
-    combined_issues = sorted(issues_opened + issues_closed, key=lambda x:x.updated_at)
-        
+    combined_issues = sorted(issues_opened + issues_closed, key=lambda x: x.updated_at)
+
     return combined_issues
 
 
@@ -58,6 +66,7 @@ def format_issues(input_issues):
     :param input_issues: list of tuples containing issues of interest
     :return: list of tuples containing reformatted key output fields
     """
+    logging.info("beginning format issues")
     report_issues = []
 
     for issue in input_issues:
@@ -71,8 +80,10 @@ def format_issues(input_issues):
         match issue.state:
             case "open":
                 # issues we authored
-                if issue.user.login in developer_ids \
-                        and issue.updated_at >= report_start_date:
+                if (
+                    issue.user.login in developer_ids
+                    and issue.updated_at >= report_start_date
+                ):
                     report_issues.append(
                         tuple(
                             (
@@ -87,8 +98,10 @@ def format_issues(input_issues):
                     )
 
                 # issues we reviewed
-                if issue.user.login in developer_ids \
-                    and issue.updated_at >= report_start_date:
+                if (
+                    issue.user.login in developer_ids
+                    and issue.updated_at >= report_start_date
+                ):
                     report_issues.append(
                         tuple(
                             (
@@ -104,8 +117,10 @@ def format_issues(input_issues):
 
             # issues we closed
             case "closed":
-                if issue.closed_by.login in developer_ids \
-                        and issue.updated_at >= report_start_date:
+                if (
+                    issue.closed_by.login in developer_ids
+                    and issue.updated_at >= report_start_date
+                ):
                     report_issues.append(
                         tuple(
                             (
@@ -128,5 +143,3 @@ if __name__ == "__main__":
 
     for line in results:
         print(line)
-
-

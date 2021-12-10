@@ -5,8 +5,8 @@ limitations on pagination and caching with PyGitHub library
 
 import datetime
 
-from cpython_weekly_summary import get_pull_requests_of_interest
-from cpython_weekly_summary import pull_requests_all
+from weekly_pr_summary import get_pull_requests_of_interest
+from weekly_pr_summary import pull_requests_all
 
 
 def test_all_prs_on_16nov_search_by_date():
@@ -39,7 +39,7 @@ def test_all_prs_on_16nov_search_by_date():
 
     # pull results using our functions
     pr_we_care_about, _pull_requests_reviewed = get_pull_requests_of_interest(
-        pull_requests_all, start_date, end_date
+        pull_requests_all, "ambv", start_date, end_date
     )
 
     # elements below useful for simplification & debugging

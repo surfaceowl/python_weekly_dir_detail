@@ -4,70 +4,33 @@
 # requires env var:  GITHUB_ACCESS_TOKEN, a valid access token from your GitHub account
 import datetime
 import logging
-import os
-from time import time
-import requests
 
 import github.GithubException
-from github import Github
+import requests
 
-logging.basicConfig(encoding="utf-8", level=logging.DEBUG)
+from utilities import check_github_rate_limit
+from utilities import timer_decorator
 
-# setup search parameters
-github_host = Github(login_or_token=os.environ.get("GITHUB_ACCESS_TOKEN"), per_page=100)  #
-# must be
-# set in
-# env var
-repo = github_host.get_repo("python/cpython")  # target repo
-developer_ids = ["ambv"]  # list in case you want more than one
-
-# no date filter on get_pulls() method yet; state inputs must be single string
-# get all PRs, so we can capture closed, merged and reviewed together
-# sort via updated in reverse order; so we can stop iterating over API and
-# stay below our API rate limit
-github_ratelimit = github_host.get_rate_limit()
-logging.info(f"github ratelimit status is: {github_ratelimit}")
-
-
-pull_requests_all = repo.get_pulls(state="all", sort="updated", direction="descending")
-pull_reports_we_care_about = []
-final_summary = []
-
-
-def timer_decorator(function):
-    # This function shows the execution time of
-    # the function object passed
-    def wrap_func(*args, **kwargs):
-        time_start = time()
-        result = function(*args, **kwargs)
-        time_done = time()
-        logging.info(
-            f"function {function.__name__!r} executed in"
-            f" {(time_done - time_start):.4f}s"
-        )
-        return result
-
-    return wrap_func
-
-
-def create_date_object(input_standard_date_string):
-    """given input string of form YYYY-MM-DD HH:MM:SS; convert to datetime object"""
-    return datetime.datetime.strptime(input_standard_date_string, "%Y-%m-%d %H:%M:%S")
+logging.basicConfig(encoding="utf-8", level=logging.WARNING)
 
 
 @timer_decorator
 def get_pull_requests_of_interest(
-    pull_request_inputs, report_start_date, report_end_date
+        pull_request_inputs, developer_ids, report_start_date, report_end_date
 ):
     """
     filters all PRs in the repo for the one's we care about
     driven by repo name; developer ids of interest and start/end dates
+    :param developer_ids: list of developer ids to drive search results
     :param pull_request_inputs: all PRs pulled from GitHub API
     :param report_start_date: beginning of reporting period for local filtering
     :param report_end_date: end of reporting period for local filtering
     :return: pull_requests_of_interest; list of tuples - all PR detail
     :return: reviewed_pull_requests; list of ints; PR numbers that were reviewed only
     """
+
+    logging.info("begin pulling prs of interest")
+
 
     def developer_wrote_comments(pr_number):
         """
@@ -93,7 +56,7 @@ def get_pull_requests_of_interest(
     pull_requests_reviewed_inner = []
     pull_processed_counter = 0
 
-    logging.info(f"github ratelimit status is: {github_ratelimit}")
+    check_github_rate_limit()
     logging.info(f"report_start_date: {report_start_date}")
     logging.info(f"report_end_date: {report_end_date}")
 
@@ -109,33 +72,31 @@ def get_pull_requests_of_interest(
             else:
                 user = each_pull_request.user
             if pull_processed_counter % 50 == 0:
-                print(
+                logging.info(
                     f"{pull_processed_counter:>8,}  "
                     f"{each_pull_request.number:>6}  "
                     f"{each_pull_request.updated_at}  "
                     f"{user}  "
                 )
             if (
-                each_pull_request.merged_by is not None
-                and each_pull_request.merged_at is not None
+                    each_pull_request.merged_by is not None
+                    and each_pull_request.merged_at is not None
             ):
                 # keep only PRs we are interested in
                 # PR's we merged
                 if (
-                    each_pull_request.state == "closed"
-                    and report_start_date
-                    <= each_pull_request.merged_at
-                    <= (report_end_date + datetime.timedelta(days=2))
-                    and each_pull_request.merged_by.login in developer_ids
+                        each_pull_request.state == "closed"
+                        and report_start_date
+                        <= each_pull_request.merged_at
+                        <= (report_end_date + datetime.timedelta(days=2))
+                        and each_pull_request.merged_by.login in developer_ids
                 ):
                     pull_requests_of_interest.append(each_pull_request)
 
                 # PRs we authored
                 elif (
-                    report_start_date
-                    <= each_pull_request.updated_at
-                    <= report_end_date
-                    and each_pull_request.user.login in developer_ids
+                        report_start_date <= each_pull_request.updated_at <= report_end_date
+                        and each_pull_request.user.login in developer_ids
                 ):
                     pull_requests_of_interest.append(each_pull_request)
 
@@ -144,38 +105,37 @@ def get_pull_requests_of_interest(
                 # requires returning separate list of 'reviewed' PRs, so
                 # we don't have to process again
                 elif (
-                    report_start_date
-                    <= each_pull_request.updated_at
-                    <= (report_end_date + datetime.timedelta(days=3))
-                    # added buffer for PRs updated after review by others
-                    and each_pull_request.comments >= 1  # defer expensive requests call
+                        report_start_date
+                        <= each_pull_request.updated_at
+                        <= (report_end_date + datetime.timedelta(days=3))
+                        # added buffer for PRs updated after review by others
+                        and each_pull_request.comments >= 1
+                # defer expensive requests call
                 ):
                     if developer_wrote_comments(each_pull_request.number) is True:
                         pull_requests_of_interest.append(each_pull_request)
                         pull_requests_reviewed_inner.append(each_pull_request.number)
 
-    logging.info("PRs reviewed / found through comments search")
-    for pr_in_list in pull_requests_reviewed_inner:
-        logging.info(pr_in_list)
     return pull_requests_of_interest, pull_requests_reviewed_inner
 
 
 @timer_decorator
-def extract_friendly_report_info(
-    interesting_pull_requests,
-    reviewed_pull_requests,
-    report_start_date,
-    report_end_date,
-):
+def extract_friendly_report_info(interesting_pull_requests, reviewed_pull_requests,
+                                 developer_ids, report_start_date,
+                                 report_end_date):
     """
     extracts and formats key fields into copy/paste ready text block
     to drop into the weekly blog report
     :param interesting_pull_requests: list of tuples, subset of PRs we care about
     :param reviewed_pull_requests: list of ints, PR #s confirmed by comment text
+    :param developer_ids: list of developer ids we are interested in
     :param report_start_date: beginning of reporting period for local filtering
     :param report_end_date: end of reporting period for local filtering
     :return: report_data; list of lists we can easily print
     """
+
+    logging.info("begin extracting friendly report info")
+
     report_data = []
     for each_pull_request in interesting_pull_requests:
 
@@ -183,9 +143,9 @@ def extract_friendly_report_info(
         current_pr_action = None
 
         if (
-            each_pull_request.merged_at is None
-            and each_pull_request.user.login in developer_ids
-            and each_pull_request.created_at >= report_start_date
+                each_pull_request.merged_at is None
+                and each_pull_request.user.login in developer_ids
+                and each_pull_request.created_at >= report_start_date
         ):
             current_pr_action = "authored"
 
@@ -193,8 +153,8 @@ def extract_friendly_report_info(
             current_pr_action = "reviewed"
 
         elif (
-            report_start_date <= each_pull_request.merged_at <= report_end_date
-            and each_pull_request.merged_by.login in developer_ids
+                report_start_date <= each_pull_request.merged_at <= report_end_date
+                and each_pull_request.merged_by.login in developer_ids
         ):
             current_pr_action = "closed"
 
@@ -256,6 +216,7 @@ def format_blog_html_block(report_data):
     :param report_data: list of tuples of input data
     :return: report_output: list of lists, ready for manual copy/paste into blog
     """
+    logging.info("begin formatting for blog")
     report_output = []
     last_day_used = None
     last_work_product_used = None
@@ -293,25 +254,32 @@ def format_blog_html_block(report_data):
     return report_output
 
 
-if __name__ == "__main__":
+def get_final_summary(pull_requests, developer_ids, start_date, end_date):
+    """
+    utility to safely wrap our functions and return nicely summarized results
+    :param developer_ids:
+    :param pull_requests:  input list of pull request tuples
+    :param start_date:  beginning of reporting period for local filtering
+    :param end_date: end of reporting period for local filtering
+    :return:
+    """
+    logging.info("starting main routine - pulling from GitHub for report")
+    final_summary = []
 
-    # user input dates of interest
-    start_date = datetime.datetime(2021, 8, 30)  # change this (YYYY M DD)
-    end_date = datetime.datetime(2021, 9, 5, 23)  # change this
-
-    # modify end_date to capture all 24 hours of the last day
-    end_date = end_date + datetime.timedelta(days=1) #
-
-    # merge results for different sets of pull requests
-    # for pull_request_group in pull_requests_all:
     try:
         (
             pull_reports_we_care_about,
             pull_requests_reviewed,
-        ) = get_pull_requests_of_interest(pull_requests_all, start_date, end_date)
-        final_summary = extract_friendly_report_info(
-            pull_reports_we_care_about, pull_requests_reviewed, start_date, end_date
+        ) = get_pull_requests_of_interest(
+            pull_requests, developer_ids, start_date, end_date
         )
+
+        summary = extract_friendly_report_info(pull_reports_we_care_about,
+                                               pull_requests_reviewed, "ambv",
+                                               start_date, end_date)
+
+        final_summary = format_blog_html_block(summary)
+
     except github.RateLimitExceededException:
         logging.error(f"github rate limit exceeded", github.RateLimitExceededException)
     except github.GithubException as error:
@@ -319,13 +287,7 @@ if __name__ == "__main__":
     except IndexError as error:
         logging.error(error)
 
-    logging.info(f"github ratelimit status is: {github_ratelimit}")
-
-    # nice formatting
-    final_summary = format_blog_html_block(final_summary)
-
     for item in final_summary:
-        logging.info(item)  # cut the branch name from prefix to mirror current blog
-        # format
+        logging.info(item)
 
-    logging.info(f"github ratelimit status is: {github_ratelimit}")
+    return final_summary
