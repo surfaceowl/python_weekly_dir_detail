@@ -6,6 +6,9 @@ import datetime
 import logging
 from cpython_weekly_summary import repo
 from cpython_weekly_summary import get_pull_requests_of_interest
+from cpython_weekly_summary import pull_requests_all
+
+from math import isclose
 
 
 def test_get_one_reviewed_pr28089():
@@ -25,3 +28,4 @@ def test_get_one_reviewed_pr28089():
     )
 
     assert authored_pr_we_care_about[0].number == 28089
+

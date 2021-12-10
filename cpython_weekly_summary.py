@@ -14,7 +14,10 @@ from github import Github
 logging.basicConfig(encoding="utf-8", level=logging.DEBUG)
 
 # setup search parameters
-github_host = Github(os.environ.get("GITHUB_ACCESS_TOKEN"))  # must be set in env var
+github_host = Github(login_or_token=os.environ.get("GITHUB_ACCESS_TOKEN"), per_page=100)  #
+# must be
+# set in
+# env var
 repo = github_host.get_repo("python/cpython")  # target repo
 developer_ids = ["ambv"]  # list in case you want more than one
 
@@ -122,7 +125,7 @@ def get_pull_requests_of_interest(
                     each_pull_request.state == "closed"
                     and report_start_date
                     <= each_pull_request.merged_at
-                    <= report_end_date
+                    <= (report_end_date + datetime.timedelta(days=2))
                     and each_pull_request.merged_by.login in developer_ids
                 ):
                     pull_requests_of_interest.append(each_pull_request)
@@ -143,7 +146,8 @@ def get_pull_requests_of_interest(
                 elif (
                     report_start_date
                     <= each_pull_request.updated_at
-                    <= report_end_date
+                    <= (report_end_date + datetime.timedelta(days=3))
+                    # added buffer for PRs updated after review by others
                     and each_pull_request.comments >= 1  # defer expensive requests call
                 ):
                     if developer_wrote_comments(each_pull_request.number) is True:
@@ -291,9 +295,12 @@ def format_blog_html_block(report_data):
 
 if __name__ == "__main__":
 
-    # input dates of interest
-    start_date = datetime.datetime(2021, 8, 30)  # change this 11/15
-    end_date = datetime.datetime(2021, 9, 5)  # change this  11/21
+    # user input dates of interest
+    start_date = datetime.datetime(2021, 8, 30)  # change this (YYYY M DD)
+    end_date = datetime.datetime(2021, 9, 5, 23)  # change this
+
+    # modify end_date to capture all 24 hours of the last day
+    end_date = end_date + datetime.timedelta(days=1) #
 
     # merge results for different sets of pull requests
     # for pull_request_group in pull_requests_all:
