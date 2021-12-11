@@ -1,7 +1,6 @@
 """
-module pulls select data from GitHub for cpython Developer In Residence
-weekly reporting. collect final results in a list, to make html ready lines to
-drop into the weekly blog
+module pulls select PR data from GitHub for cpython Developer In Residence reporting.
+Collect final results in a list of html lines ready to drop into the weekly blog
 requires env var:  GITHUB_ACCESS_TOKEN, a valid access token from your GitHub account
 """
 import datetime
@@ -10,118 +9,117 @@ import logging
 import github.GithubException
 import requests
 
-from utilities import check_github_rate_limit
+from utilities import check_github_rate_limit, is_date_interesting
 from utilities import timer_decorator
 
 logging.basicConfig(encoding="utf-8", level=logging.WARNING)
 
 
+def developer_wrote_comments(pr_number, developer_ids):
+    """
+    PyGitHub does not provide easy way to confirm if a developer reviewed a PR.
+    As workaround, we parse written PR comments for target developer_id
+    :param pr_number: pull request id number
+    :param developer_ids: list of GitHub IDs of developers we are interested in
+    :return: bool: developer_commented
+    """
+    target = (
+        f"https://api.github.com/repos/python/cpython/issues/" f"{pr_number}/comments"
+    )
+    response = requests.get(target).text
+    for developer in developer_ids:
+        return bool(developer in response)
+
+
+# END developer_wrote_comments
+
+
 @timer_decorator
-def get_pull_requests_of_interest(
+def get_prs_of_interest(
     pull_request_inputs, developer_ids, report_start_date, report_end_date
 ):
     """
     filters all PRs in the repo for the one's we care about
     driven by repo name; developer ids of interest and start/end dates
-    :param developer_ids: list of developer ids to drive search results
-    :param pull_request_inputs: all PRs pulled from GitHub API
-    :param report_start_date: beginning of reporting period for local filtering
-    :param report_end_date: end of reporting period for local filtering
+    :param developer_ids: list to drive search results
+    :param pull_request_inputs: all PRs from GitHub API
+    :param report_start_date: for local filtering
+    :param report_end_date: also for local filtering
     :return: pull_requests_of_interest; list of tuples - all PR detail
-    :return: reviewed_pull_requests; list of ints; PR numbers that were reviewed only
+    :return: reviewed_pull_requests; list of ints; PR numbers that were reviewed
     """
-
     logging.info("begin pulling prs of interest")
-
-    def developer_wrote_comments(pr_number):
-        """
-        PyGitHub does not provide easy way to confirm if a developer reviewed a PR, so
-        we will parse the text written comments by target developer_id
-        :param pr_number: pull request id number
-        :return: bool: developer_commented
-        """
-        developer_commented = False
-        target = (
-            f"https://api.github.com/repos/python/cpython/issues/"
-            f"{pr_number}/comments"
-        )
-        response = requests.get(target).text
-        for developer in developer_ids:
-            if developer in response:
-                developer_commented = True
-                break
-        return developer_commented
+    check_github_rate_limit()
 
     # setup
     pull_requests_of_interest = []
     pull_requests_reviewed_inner = []
-    pull_processed_counter = 0
-
-    check_github_rate_limit()
-    logging.info(f"report_start_date: {report_start_date}")
-    logging.info(f"report_end_date: {report_end_date}")
 
     for each_pull_request in pull_request_inputs:
+        update_date_interesting = is_date_interesting(
+            report_start_date, report_end_date, each_pull_request.updated_at
+        )
         if each_pull_request.updated_at < report_start_date:
-            # since API return is sorted in reverse dates, once we go earlier
-            # than report_start_date, break out of the loop to reduce # of API calls
+            # Our API call return is sorted in descending dates, once we go earlier
+            # than report_start_date, break out of loop to reduce # of API calls
             break
-        else:
-            pull_processed_counter += 1
-            if each_pull_request.user.login is not None:
-                user = each_pull_request.user.login
-            else:
-                user = each_pull_request.user
-            if pull_processed_counter % 50 == 0:
-                logging.info(
-                    f"{pull_processed_counter:>8,}  "
-                    f"{each_pull_request.number:>6}  "
-                    f"{each_pull_request.updated_at}  "
-                    f"{user}  "
-                )
-            if (
-                each_pull_request.merged_by is not None
+
+        merge_date_interesting = is_date_interesting(
+            report_start_date, report_end_date, each_pull_request.merged_at
+        )
+        closed_date_interesting = is_date_interesting(
+            report_start_date, report_end_date, each_pull_request.closed_at
+        )
+
+            # keep PR's we merged
+        if (
+            (
+                each_pull_request.merged is True
+                and each_pull_request.state == "closed"
+                and each_pull_request.merged_by is not None
                 and each_pull_request.merged_at is not None
-            ):
-                # keep only PRs we are interested in
-                # PR's we merged
-                if (
-                    each_pull_request.state == "closed"
-                    and report_start_date
-                    <= each_pull_request.merged_at
-                    <= (report_end_date + datetime.timedelta(days=2))
-                    and each_pull_request.merged_by.login in developer_ids
-                ):
-                    pull_requests_of_interest.append(each_pull_request)
+            )
+            and merge_date_interesting
+            and bool(each_pull_request.merged_by.login in developer_ids)
+        ):
+            pull_requests_of_interest.append(each_pull_request)
+            continue
 
-                # PRs we authored
-                elif (
-                    report_start_date <= each_pull_request.updated_at <= report_end_date
-                    and each_pull_request.user.login in developer_ids
-                ):
-                    pull_requests_of_interest.append(each_pull_request)
+        # keep PRs we authored
+        if (
+            update_date_interesting
+            and each_pull_request.user.login in developer_ids
+        ):
+            pull_requests_of_interest.append(each_pull_request)
+            continue
 
-                # get PRs we reviewed by parsing pull comments by developer_id
-                # reviews apply to both open PRs, and PRs closed by anyone
-                # requires returning separate list of 'reviewed' PRs, so
-                # we don't have to process again
-                elif (
-                    report_start_date
-                    <= each_pull_request.updated_at
-                    <= (report_end_date + datetime.timedelta(days=3))
-                    # added buffer for PRs updated after review by others
-                    and each_pull_request.comments >= 1
-                    # defer expensive requests call
-                ):
-                    if developer_wrote_comments(each_pull_request.number) is True:
-                        pull_requests_of_interest.append(each_pull_request)
-                        pull_requests_reviewed_inner.append(each_pull_request.number)
+            # keep PRs we reviewed
+        if (
+            update_date_interesting
+            and each_pull_request.comments >= 1
+            and (
+                developer_wrote_comments(
+                    each_pull_request.number, developer_ids
+                )
+                is True
+            )
+        ):
+            pull_requests_of_interest.append(each_pull_request)
+            pull_requests_reviewed_inner.append(each_pull_request.number)
+            continue
 
+        # keep PRs we closed
+        if each_pull_request.state == "closed" and closed_date_interesting:
+            pull_requests_of_interest.append(each_pull_request)
+            continue
     return pull_requests_of_interest, pull_requests_reviewed_inner
 
 
+# END get_prs_of_interest
+
+
 @timer_decorator
-def extract_friendly_report_info(
+def extract_pr_info_to_final_format(
     interesting_pull_requests,
     reviewed_pull_requests,
     developer_ids,
@@ -146,6 +144,17 @@ def extract_friendly_report_info(
 
         # compute current_pr_action
         current_pr_action = None
+        closed_date_of_interest = bool(
+            report_start_date <= each_pull_request.closed_at <= report_end_date
+        )
+        if each_pull_request.merged_at is not None:
+            merged_date_of_interest = bool(
+                report_start_date <= each_pull_request.merged_at <= report_end_date
+            )
+        else:
+            merged_date_of_interest = False
+
+        developer_of_interest = bool(each_pull_request.merged_by.login in developer_ids)
 
         if (
             each_pull_request.merged_at is None
@@ -157,37 +166,25 @@ def extract_friendly_report_info(
         elif each_pull_request.number in reviewed_pull_requests:
             current_pr_action = "reviewed"
 
-        elif (
-            report_start_date <= each_pull_request.closed_at <= report_end_date
-            and each_pull_request.merged_by.login in developer_ids
-        ):
-            current_pr_action = "closed"
-
-        elif (
-            report_start_date <= each_pull_request.merged_at <= report_end_date
-            and each_pull_request.merged_by.login in developer_ids
-        ):
+        elif merged_date_of_interest and developer_of_interest:
             current_pr_action = "merged"
 
-        # create concise text and HTML link for this PR
-        link_text = f"{current_pr_action} GH-{each_pull_request.number}"
+        elif closed_date_of_interest and developer_of_interest:
+            current_pr_action = "closed"
 
-        # use html_url attribute for human friendly link,
+        # create concise text and HTML link
+        link_text = f"{current_pr_action} GH-{each_pull_request.number}"
         link_url = f"<a href={each_pull_request.html_url}>{link_text}</a>"
 
-        # create friendly PR title for blog; trap for missing data
-        if each_pull_request.base.ref is None:
+        # create friendly PR title for blog
+        if (
+            each_pull_request.base.ref is None
+            or each_pull_request.base.ref in each_pull_request.title
+        ):
             friendly_title = each_pull_request.title
-
-        # add python version to title if not there already
-        elif each_pull_request.base.ref not in each_pull_request.title:
-            friendly_title = f"[{each_pull_request.base.ref}] {each_pull_request.title}"
-
         else:
-            friendly_title = each_pull_request.title
-
+            friendly_title = f"[{each_pull_request.base.ref}] {each_pull_request.title}"
         potential_duplicate_pr_ref_num = f"(GH-{each_pull_request.number})"
-
         if potential_duplicate_pr_ref_num in friendly_title:
             friendly_title.replace(each_pull_request.number, "")
 
@@ -204,6 +201,13 @@ def extract_friendly_report_info(
             )
         )
 
+    return sort_final_data(report_data)
+
+
+# END extract_pr_info_to_final_format
+
+
+def sort_final_data(report_data):
     # messy nested sort worth it for easy copy & paste output
     # outer sort = day of week (ascending)
     # 2nd sort = issue/PR (ascending)
@@ -215,7 +219,6 @@ def extract_friendly_report_info(
         ),
         key=lambda key0: datetime.datetime.fromisoformat(key0[0]).date(),
     )
-
     return report_data
 
 
@@ -281,11 +284,9 @@ def get_final_summary(pull_requests, developer_ids, start_date, end_date):
         (
             pull_reports_we_care_about,
             pull_requests_reviewed,
-        ) = get_pull_requests_of_interest(
-            pull_requests, developer_ids, start_date, end_date
-        )
+        ) = get_prs_of_interest(pull_requests, developer_ids, start_date, end_date)
 
-        summary = extract_friendly_report_info(
+        summary = extract_pr_info_to_final_format(
             pull_reports_we_care_about,
             pull_requests_reviewed,
             "ambv",
@@ -296,7 +297,7 @@ def get_final_summary(pull_requests, developer_ids, start_date, end_date):
         final_summary = format_blog_html_block(summary)
 
     except github.RateLimitExceededException:
-        logging.error(f"github rate limit exceeded", github.RateLimitExceededException)
+        logging.error("github rate limit exceeded", github.RateLimitExceededException)
     except github.GithubException as error:
         logging.error(f"a server error occurred {error}")
     except IndexError as error:

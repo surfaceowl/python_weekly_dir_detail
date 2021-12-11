@@ -9,7 +9,7 @@ from github import Github
 # user-set input search parameters
 # GITHUB_ACCESS_TOKEN must be set in env var
 target_repo = "python/cpython"
-developer_ids = ["ambv"]  # list in case you want more than one
+developer_ids = ["ambv"]  # list in case you want more than one; "miss-islington"
 start_date = datetime.datetime(2021, 11, 15)  # change this (YYYY M DD)
 end_date = datetime.datetime(2021, 11, 21)  # change this
 

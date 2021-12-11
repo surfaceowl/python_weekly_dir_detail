@@ -3,25 +3,25 @@ separate file for debugging of single tests
 """
 
 import datetime
-from config import github_host
-from weekly_pr_summary import get_pull_requests_of_interest
+from config import developer_ids
+from config import repo
+from weekly_pr_summary import get_prs_of_interest
 
 
-def test_get_one_reviewed_pr29440():
+def test_get_one_closed_pr29537():
     """
-    Tuesday 31 Aug - one PR was reviewed per dev blog at:
-    https://lukasz.langa.pl/94b5086c-81df-498a-9f8b-f9e06f5d9538/
-    expected PR:  https://github.com/python/cpython/pull/28089
+    Tuesday 16 Nov - one PR was closed per dev blog at:
+    https://lukasz.langa.pl/4f7c2091-2a74-48ab-99d7-8521c4fa8363/
+    expected PR:  https://github.com/python/cpython/pull/29537
     """
-    repo = github_host.get_repo("python/cpython")
     # set dates for this test
-    start_date = datetime.datetime(2021, 8, 31, 00, 00, 00)
-    end_date = datetime.datetime(2021, 8, 31, 23, 59, 59)
+    start_date = datetime.datetime(2021, 11, 16, 00, 00, 00)
+    end_date = datetime.datetime(2021, 11, 16, 23, 59, 59)
 
-    list_with_pull_report = [repo.get_pull(29440)]
+    list_with_pull_report_29537 = [repo.get_pull(29537)]
 
-    authored_pr_we_care_about, pull_requests_reviewed = get_pull_requests_of_interest(
-        list_with_pull_report, "ambv", start_date, end_date
+    closed_pr_we_care_about, pull_requests_reviewed = get_prs_of_interest(
+        list_with_pull_report_29537, developer_ids, start_date, end_date
     )
 
-    assert authored_pr_we_care_about[0].number == 28089
+    assert closed_pr_we_care_about[0].number == 29537

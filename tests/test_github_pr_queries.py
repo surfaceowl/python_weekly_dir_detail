@@ -12,8 +12,9 @@ between date ranges to pull less, but that is client-side responsibility
 
 import datetime
 
-from weekly_pr_summary import get_pull_requests_of_interest
+from weekly_pr_summary import get_prs_of_interest
 from config import repo
+from config import developer_ids
 
 
 def test_get_one_closed_pr29537():
@@ -28,8 +29,8 @@ def test_get_one_closed_pr29537():
 
     list_with_pull_report_29537 = [repo.get_pull(29537)]
 
-    closed_pr_we_care_about, pull_requests_reviewed = get_pull_requests_of_interest(
-        list_with_pull_report_29537, "ambv", start_date, end_date
+    closed_pr_we_care_about, pull_requests_reviewed = get_prs_of_interest(
+        list_with_pull_report_29537, developer_ids, start_date, end_date
     )
 
     assert closed_pr_we_care_about[0].number == 29537
@@ -47,8 +48,8 @@ def test_get_one_authored_pr28044():
 
     list_with_pull_report = [repo.get_pull(28044)]
 
-    authored_pr_we_care_about, pull_requests_reviewed = get_pull_requests_of_interest(
-        list_with_pull_report, "ambv", start_date, end_date
+    authored_pr_we_care_about, pull_requests_reviewed = get_prs_of_interest(
+        list_with_pull_report, developer_ids, start_date, end_date
     )
 
     assert authored_pr_we_care_about[0].number == 28044
@@ -66,8 +67,8 @@ def test_get_one_reviewed_pr28089():
 
     list_with_pull_report = [repo.get_pull(28089)]
 
-    authored_pr_we_care_about, pull_requests_reviewed = get_pull_requests_of_interest(
-        list_with_pull_report, "ambv", start_date, end_date
+    authored_pr_we_care_about, pull_requests_reviewed = get_prs_of_interest(
+        list_with_pull_report, developer_ids, start_date, end_date
     )
 
     assert authored_pr_we_care_about[0].number == 28089
@@ -99,7 +100,7 @@ def test_all_prs_on_16nov_search_by_list_of_pr():
         29602,
         29601,
     ]
-    reviewed_pr = [29601]
+    reviewed_pr_expected = [29601]
 
     # assemble subset of targeted pr objects for faster testing
     pull_requests_targeted = [
@@ -110,10 +111,14 @@ def test_all_prs_on_16nov_search_by_list_of_pr():
     ]
 
     # pull results using our functions
-    pr_we_care_about, pull_requests_reviewed = get_pull_requests_of_interest(
-        pull_requests_targeted, "ambv", start_date, end_date
+    pr_we_care_about, pull_requests_reviewed = get_prs_of_interest(
+        pull_requests_targeted, developer_ids, start_date, end_date
     )
 
     pr_numbers_found = [pr.number for pr in pr_we_care_about]
+    all_expected_prs_found = bool(set(pr_numbers_found) == set(pr_we_expect_to_find))
+    all_expected_reviewed_prs_found = bool(
+        pull_requests_reviewed == reviewed_pr_expected
+    )
 
-    assert set(pr_numbers_found) == set(pr_we_expect_to_find)
+    assert all_expected_prs_found and all_expected_reviewed_prs_found

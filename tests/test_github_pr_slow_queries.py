@@ -8,7 +8,7 @@ import logging
 
 from config import developer_ids
 from config import pull_requests_all
-from weekly_pr_summary import get_pull_requests_of_interest
+from weekly_pr_summary import get_prs_of_interest
 
 logging.basicConfig(encoding="utf-8", level=logging.DEBUG)
 
@@ -42,21 +42,19 @@ def test_all_prs_on_16nov_search_by_date():
     # reviewed_pr = [29601]
 
     # pull results using our functions
-    pr_we_care_about, _pull_requests_reviewed = get_pull_requests_of_interest(
-        pull_requests_all, "ambv", start_date, end_date
+    pr_we_care_about, _pull_requests_reviewed = get_prs_of_interest(
+        pull_requests_all, developer_ids, start_date, end_date
     )
 
     # elements below useful for simplification & debugging
-    pr_numbers_found = sorted([pr.number for pr in pr_we_care_about])
-    pr_numbers_expected = sorted(pr_we_expect_to_find)
-    pr_numbers_expected_not_found = [
-        pr for pr in pr_numbers_expected if (pr not in pr_numbers_found)
-    ]
+    prs_found = sorted([pr.number for pr in pr_we_care_about])
+    prs_expected = sorted(pr_we_expect_to_find)
+    prs_expected_not_found = [pr for pr in prs_expected if (pr not in prs_found)]
 
     # code may find more PRs than Developer In Residence chose to publish on a date
     # code may not find every PR given complexities in source data on GitHub
     # assume if we find 95% of prs we are close enough
-    assert len(pr_numbers_expected_not_found) <= 0.05 * len(pr_numbers_expected)
+    assert len(prs_expected_not_found) == 0
 
 
 def test_all_prs_on_15to21nov_search_by_date():
@@ -118,23 +116,16 @@ def test_all_prs_on_15to21nov_search_by_date():
     # reviewed_pr = [29601, 29525, 29626, 23320]
 
     # pull results using our functions
-    pr_we_care_about, _pull_requests_reviewed = get_pull_requests_of_interest(
+    pr_we_care_about, _pull_requests_reviewed = get_prs_of_interest(
         pull_requests_all, developer_ids, start_date, end_date
     )
 
     # elements below useful for simplification & debugging
-    pr_numbers_found = sorted([pr.number for pr in pr_we_care_about])
-    pr_numbers_expected = sorted(pr_we_expect_to_find)
-    pr_numbers_expected_not_found = [
-        pr for pr in pr_numbers_expected if (pr not in pr_numbers_found)
-    ]
+    prs_found = sorted([pr.number for pr in pr_we_care_about])
+    prs_expected = sorted(pr_we_expect_to_find)
+    prs_expected_not_found = [pr for pr in prs_expected if (pr not in prs_found)]
 
-    print(
-        f"\n"
-        f"the following PRs were not captured by the report:  "
-        f"{pr_numbers_expected_not_found}"
-    )
     # code may find more PRs than Developer In Residence chose to publish on a date
     # code may not find every PR given complexities in source data on GitHub
     # assume if we find 95% of prs we are close enough
-    assert len(pr_numbers_expected_not_found) <= 0.18 * len(pr_numbers_expected)
+    assert len(prs_expected_not_found) <= 0.18 * len(prs_expected)
