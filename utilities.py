@@ -12,31 +12,34 @@ logging.basicConfig(encoding="utf-8", level=logging.WARNING)
 
 def check_github_rate_limit():
     github_ratelimit = github_host.get_rate_limit()
-    logging.debug(f"github ratelimit status is: {github_ratelimit}")
+    logging.debug(f"GitHub ratelimit status is: {github_ratelimit}")
     return github_ratelimit
 
 
-def create_date_object(input_standard_date_string):
+def create_date_object(input_standard_date: str) -> datetime:
     """given input string of form YYYY-MM-DD HH:MM:SS; convert to datetime object"""
-    return datetime.datetime.strptime(input_standard_date_string, "%Y-%m-%d %H:%M:%S")
+    return datetime.datetime.strptime(input_standard_date, "%Y-%m-%d %H:%M:%S")
 
 
-def date_interesting(pr_datetime_object) -> bool:
-    """
-    :param pr_datetime_object
-    if this date is interesting must check for None first,
+def is_date_interesting(
+    report_start_date: datetime, report_end_date: datetime, pr_datetime_object
+) -> bool:
+    """if this date is interesting must check for None first,
     since closed and merge fields are not populated
-    also added buffer for PRs updated after review by others"""
+    also added buffer for PRs updated after review by others
+    :param pr_datetime_object
+    :param report_start_date start date we are checking against
+    :param report_end_date end date we are checking against"""
 
     if pr_datetime_object is None:
-        is_date_interesting = False
+        return False
     else:
-        is_date_interesting = bool(
+        date_interesting = bool(
             report_start_date
             <= pr_datetime_object
             <= (report_end_date + datetime.timedelta(days=3))
         )
-    return is_date_interesting
+    return date_interesting
 
 
 def timer_decorator(function):
@@ -53,21 +56,3 @@ def timer_decorator(function):
         return result
 
     return wrapped_function
-
-
-def is_date_interesting(report_start_date, report_end_date, pr_datetime_object):
-    """
-    :param pr_datetime_object
-    if this date is interesting must check for None first,
-    since closed and merge fields are not populated
-    also added buffer for PRs updated after review by others"""
-
-    if pr_datetime_object is None:
-        return False
-    else:
-        is_date_interesting = bool(
-            report_start_date
-            <= pr_datetime_object
-            <= (report_end_date + datetime.timedelta(days=3))
-        )
-    return is_date_interesting

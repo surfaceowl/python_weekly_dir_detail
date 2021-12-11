@@ -2,7 +2,8 @@ import os
 from github import Github
 import datetime
 import logging
-from config import developer_ids
+
+# from config import developer_ids
 from utilities import check_github_rate_limit
 
 logging.basicConfig(encoding="utf-8", level=logging.WARNING)

@@ -1,20 +1,20 @@
 """
-test github queries for specific results we know were reported on various
+test GitHub queries for specific results we know were reported on various
 weekly Developer In Residence Reports
 15 Nov - 21 Nov 2021: https://lukasz.langa.pl/4f7c2091-2a74-48ab-99d7-8521c4fa8363/
 30 Aug - 5 Sept 2021:  https://lukasz.langa.pl/94b5086c-81df-498a-9f8b-f9e06f5d9538/
 
 Tests can take some time since PyGitHub does not enable limit all queries by date and
-cpython/cpython is a large repo (e.g. query for PR pulls from entire repo (unlike
+cpython/cpython is a large repo (e.g. query for PR pulls from entire repo unlike
 Issues API, where you can spec a "since" date).  Ideally we'd only like PRs modified
 between date ranges to pull less, but that is client-side responsibility
 """
 
 import datetime
 
-from weekly_pr_summary import get_prs_of_interest
-from config import repo
 from config import developer_ids
+from config import repo
+from weekly_pr_summary import get_prs_of_interest
 
 
 def test_get_one_closed_pr29537():
@@ -72,6 +72,25 @@ def test_get_one_reviewed_pr28089():
     )
 
     assert authored_pr_we_care_about[0].number == 28089
+
+
+def test_get_one_reviewed_pr29440():
+    """
+    Tuesday 16 Aug - one PR was reviewed per dev blog at:
+    https://lukasz.langa.pl/4f7c2091-2a74-48ab-99d7-8521c4fa8363/
+    expected PR:  https://github.com/python/cpython/pull/29440
+    """
+    # set dates for this test
+    start_date = datetime.datetime(2021, 11, 15, 00, 00, 00)
+    end_date = datetime.datetime(2021, 11, 21, 23, 59, 59)
+
+    list_with_pull_report = [repo.get_pull(29440)]
+
+    authored_pr_we_care_about, pull_requests_reviewed = get_prs_of_interest(
+        list_with_pull_report, developer_ids, start_date, end_date
+    )
+
+    assert authored_pr_we_care_about[0].number == 29440
 
 
 def test_all_prs_on_16nov_search_by_list_of_pr():

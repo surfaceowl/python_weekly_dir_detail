@@ -15,17 +15,15 @@ from utilities import timer_decorator
 logging.basicConfig(encoding="utf-8", level=logging.WARNING)
 
 
-def developer_wrote_comments(pr_number, developer_ids):
+def developer_wrote_comments(pr_object, developer_ids):
     """
     PyGitHub does not provide easy way to confirm if a developer reviewed a PR.
     As workaround, we parse written PR comments for target developer_id
-    :param pr_number: pull request id number
+    :param pr_object:
     :param developer_ids: list of GitHub IDs of developers we are interested in
     :return: bool: developer_commented
     """
-    target = (
-        f"https://api.github.com/repos/python/cpython/issues/" f"{pr_number}/comments"
-    )
+    target = pr_object.review_comments_url
     response = requests.get(target).text
     for developer in developer_ids:
         return bool(developer in response)
@@ -71,7 +69,7 @@ def get_prs_of_interest(
             report_start_date, report_end_date, each_pull_request.closed_at
         )
 
-            # keep PR's we merged
+        # keep PR's we merged
         if (
             (
                 each_pull_request.merged is True
@@ -86,10 +84,7 @@ def get_prs_of_interest(
             continue
 
         # keep PRs we authored
-        if (
-            update_date_interesting
-            and each_pull_request.user.login in developer_ids
-        ):
+        if update_date_interesting and each_pull_request.user.login in developer_ids:
             pull_requests_of_interest.append(each_pull_request)
             continue
 
@@ -98,9 +93,7 @@ def get_prs_of_interest(
             update_date_interesting
             and each_pull_request.comments >= 1
             and (
-                developer_wrote_comments(
-                    each_pull_request.number, developer_ids
-                )
+                developer_wrote_comments(each_pull_request.number, developer_ids)
                 is True
             )
         ):
@@ -289,7 +282,7 @@ def get_final_summary(pull_requests, developer_ids, start_date, end_date):
         summary = extract_pr_info_to_final_format(
             pull_reports_we_care_about,
             pull_requests_reviewed,
-            "ambv",
+            developer_ids,
             start_date,
             end_date,
         )

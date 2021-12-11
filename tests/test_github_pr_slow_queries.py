@@ -54,7 +54,7 @@ def test_all_prs_on_16nov_search_by_date():
     # code may find more PRs than Developer In Residence chose to publish on a date
     # code may not find every PR given complexities in source data on GitHub
     # assume if we find 95% of prs we are close enough
-    assert len(prs_expected_not_found) == 0
+    assert not prs_expected_not_found
 
 
 def test_all_prs_on_15to21nov_search_by_date():

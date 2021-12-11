@@ -12,6 +12,7 @@ from config import start_date
 logging.basicConfig(encoding="utf-8", level=logging.WARNING)
 
 
+# noinspection PyUnresolvedReferences
 def filter_issues(input_issues):
     """
     filter and sort issues and prs
@@ -32,15 +33,16 @@ def filter_issues(input_issues):
             start_date <= date_to_consider <= (end_date + datetime.timedelta(days=1))
         )
 
-        interesting_owner = bool(issue.user.login in developer_ids)
-
-        if issue.closed_by is None:
-            interesting_closer = False
-        else:
-            interesting_closer = bool(issue.closed_by.login in developer_ids)
-
         # filter stuff we want to keep
         if interesting_date_range:
+            interesting_owner = bool(issue.user.login in developer_ids)
+
+            interesting_closer = (
+                False
+                if issue.closed_by is None
+                else bool(issue.closed_by.login in developer_ids)
+            )
+
             if issue.state == "closed" and (interesting_owner or interesting_closer):
                 issues_opened.append(issue)
             elif issue.state == "open" and interesting_owner:
@@ -48,9 +50,7 @@ def filter_issues(input_issues):
             else:
                 continue
 
-    issues_combined = sorted(issues_opened + issues_closed, key=lambda x: x.updated_at)
-
-    return issues_combined
+    return sorted(issues_opened + issues_closed, key=lambda x: x.updated_at)
 
 
 def format_issues(input_issues):
