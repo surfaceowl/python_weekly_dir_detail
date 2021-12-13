@@ -29,7 +29,12 @@ def developer_wrote_comments(pr_object, developer_ids):
     pr_discussion_text = pr_html_url + pr_comments_url
     for developer in developer_ids:
         reviewed_search_string = f"{developer} approved these changes"
-        return reviewed_search_string in pr_discussion_text
+        commented_search_string = f"{developer} left a comment"
+        search_strings = [reviewed_search_string, commented_search_string]
+        for string in search_strings:
+            if string in pr_discussion_text:
+                return True
+    return False
 
 
 # END developer_wrote_comments
@@ -63,6 +68,15 @@ def get_prs_of_interest(
             # than report_start_date, break out of loop to reduce # of API calls
             break
 
+        pr_we_expect_to_find = [
+            29525,
+            29601,
+            29626,
+            23230
+        ]
+
+        if each_pull_request.number in pr_we_expect_to_find:
+            print("we found one")
         update_date_interesting = is_date_interesting(
             report_start_date, report_end_date, each_pull_request.updated_at
         )
@@ -85,6 +99,9 @@ def get_prs_of_interest(
             and bool(each_pull_request.merged_by.login in developer_ids)
         ):
             pull_requests_of_interest.append(each_pull_request)
+            if (developer_wrote_comments(each_pull_request, developer_ids) is True):
+                pull_requests_reviewed_inner.append(each_pull_request.number)
+
             continue
 
         # keep PRs we authored
@@ -93,6 +110,7 @@ def get_prs_of_interest(
             continue
 
             # keep PRs we reviewed
+            # does not find PRs that have already been merged
         if (
             update_date_interesting
             and each_pull_request.comments >= 1

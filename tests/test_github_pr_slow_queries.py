@@ -61,9 +61,10 @@ def test_all_prs_on_15to21nov_search_by_date():
     """
     Tuesday 16 Nov 2021 - 15 PR total cited (14 closed, 1 reviewed) per dev blog at
     https://lukasz.langa.pl/4f7c2091-2a74-48ab-99d7-8521c4fa8363/
+    includes date of 11/12 to capture PR 29525  closed just before report period
     """
     # set dates for this test
-    start_date = datetime.datetime(2021, 11, 15, 00, 00, 00)
+    start_date = datetime.datetime(2021, 11, 12, 00, 00, 00) # note early day
     end_date = datetime.datetime(2021, 11, 21, 23, 59, 59)
 
     pr_we_expect_to_find = [
@@ -113,7 +114,7 @@ def test_all_prs_on_15to21nov_search_by_date():
         29657,
         29539,
     ]
-    # reviewed_pr = [29601, 29525, 29626, 23320]
+    reviewed_pr = [29601, 29525, 29626, 23230]
 
     # pull results using our functions
     pr_we_care_about, _pull_requests_reviewed = get_prs_of_interest(
@@ -125,7 +126,11 @@ def test_all_prs_on_15to21nov_search_by_date():
     prs_expected = sorted(pr_we_expect_to_find)
     prs_expected_not_found = [pr for pr in prs_expected if (pr not in prs_found)]
 
+    pr_reviews_not_found = [pr for pr in reviewed_pr if (pr not in prs_found)]
+
     # code may find more PRs than Developer In Residence chose to publish on a date
-    # code may not find every PR given complexities in source data on GitHub
-    # assume if we find 95% of prs we are close enough
-    assert len(prs_expected_not_found) <= 0.18 * len(prs_expected)
+    # assume if we find 97% of prs we are close enough
+
+    found_all_prs = bool(not prs_expected_not_found) # True if empty list
+    found_all_reviewed_prs = bool(not pr_reviews_not_found) # True if empty list
+    assert found_all_prs and found_all_reviewed_prs
