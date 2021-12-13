@@ -19,14 +19,17 @@ def developer_wrote_comments(pr_object, developer_ids):
     """
     PyGitHub does not provide easy way to confirm if a developer reviewed a PR.
     As workaround, we parse written PR comments for target developer_id
+    assuming if "{developer_id} approved these changes" is found, the PR was reviewed
     :param pr_object:
     :param developer_ids: list of GitHub IDs of developers we are interested in
     :return: bool: developer_commented
     """
-    target = pr_object.review_comments_url
-    response = requests.get(target).text
+    pr_html_url = requests.get(pr_object.html_url).text
+    pr_comments_url = requests.get(pr_object.review_comments_url).text
+    pr_discussion_text = pr_html_url + pr_comments_url
     for developer in developer_ids:
-        return bool(developer in response)
+        reviewed_search_string = f"{developer} approved these changes"
+        return reviewed_search_string in pr_discussion_text
 
 
 # END developer_wrote_comments
@@ -54,14 +57,15 @@ def get_prs_of_interest(
     pull_requests_reviewed_inner = []
 
     for each_pull_request in pull_request_inputs:
-        update_date_interesting = is_date_interesting(
-            report_start_date, report_end_date, each_pull_request.updated_at
-        )
+
         if each_pull_request.updated_at < report_start_date:
             # Our API call return is sorted in descending dates, once we go earlier
             # than report_start_date, break out of loop to reduce # of API calls
             break
 
+        update_date_interesting = is_date_interesting(
+            report_start_date, report_end_date, each_pull_request.updated_at
+        )
         merge_date_interesting = is_date_interesting(
             report_start_date, report_end_date, each_pull_request.merged_at
         )
@@ -92,10 +96,7 @@ def get_prs_of_interest(
         if (
             update_date_interesting
             and each_pull_request.comments >= 1
-            and (
-                developer_wrote_comments(each_pull_request.number, developer_ids)
-                is True
-            )
+            and (developer_wrote_comments(each_pull_request, developer_ids) is True)
         ):
             pull_requests_of_interest.append(each_pull_request)
             pull_requests_reviewed_inner.append(each_pull_request.number)
@@ -105,6 +106,7 @@ def get_prs_of_interest(
         if each_pull_request.state == "closed" and closed_date_interesting:
             pull_requests_of_interest.append(each_pull_request)
             continue
+
     return pull_requests_of_interest, pull_requests_reviewed_inner
 
 
