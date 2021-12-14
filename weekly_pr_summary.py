@@ -68,12 +68,7 @@ def get_prs_of_interest(
             # than report_start_date, break out of loop to reduce # of API calls
             break
 
-        pr_we_expect_to_find = [
-            29525,
-            29601,
-            29626,
-            23230
-        ]
+        pr_we_expect_to_find = [29525, 29601, 29626, 23230]
 
         if each_pull_request.number in pr_we_expect_to_find:
             print("we found one")
@@ -99,7 +94,7 @@ def get_prs_of_interest(
             and bool(each_pull_request.merged_by.login in developer_ids)
         ):
             pull_requests_of_interest.append(each_pull_request)
-            if (developer_wrote_comments(each_pull_request, developer_ids) is True):
+            if developer_wrote_comments(each_pull_request, developer_ids) is True:
                 pull_requests_reviewed_inner.append(each_pull_request.number)
 
             continue

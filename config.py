@@ -12,6 +12,7 @@ target_repo = "python/cpython"
 developer_ids = ["ambv"]  # list in case you want more than one; "miss-islington"
 start_date = datetime.datetime(2021, 11, 15)  # change this (YYYY M DD)
 end_date = datetime.datetime(2021, 11, 21)  # change this
+end_date_buffer = 3  # num days added to end_date; capture updates by others after end
 
 # computed parameters
 github_host = Github(login_or_token=os.environ.get("GITHUB_ACCESS_TOKEN"), per_page=100)

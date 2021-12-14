@@ -17,7 +17,7 @@ def test_all_prs_on_15to21nov_search_by_date():
     includes date of 11/12 to capture PR 29525  closed just before report period
     """
     # set dates for this test
-    start_date = datetime.datetime(2021, 11, 12, 00, 00, 00) # note early day
+    start_date = datetime.datetime(2021, 11, 12, 00, 00, 00)  # note early day
     end_date = datetime.datetime(2021, 11, 21, 23, 59, 59)
 
     pr_we_expect_to_find = [
@@ -83,7 +83,6 @@ def test_all_prs_on_15to21nov_search_by_date():
 
     # code may find more PRs than Developer In Residence chose to publish on a date
     # assume if we find 97% of prs we are close enough
-    found_all_prs = bool(not prs_expected_not_found) # True if empty list
-    found_all_reviewed_prs = bool(not pr_reviews_not_found) # True if empty list
+    found_all_prs = bool(not prs_expected_not_found)  # True if empty list
+    found_all_reviewed_prs = bool(not pr_reviews_not_found)  # True if empty list
     assert found_all_prs and found_all_reviewed_prs
-

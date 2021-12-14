@@ -32,3 +32,8 @@
 ('2021-11-20 15:53:34', 'Issue', 'closed', ' [3.9]', 'https://api.github.com/repos/python/cpython/issues/29664', '[3.9] bpo-42158: Add MIME types for n-triples, n-quads, n3 and trig (GH-23230)')
 ('2021-11-18 15:02:48', 'Issue', 'closed', '[main]', 'https://api.github.com/repos/python/cpython/issues/29618', 'bpo-45837: Properly deprecate turtle.RawTurtle.settiltangle')
 ('2021-11-18 16:05:40', 'Issue', 'closed', '[3.10]', 'https://api.github.com/repos/python/cpython/issues/29612', '[3.10] bpo-45835: Fix race condition in test_queue (GH-29601)')
+('2021-12-11 00:01:17', 'Issue', 'closed', '[3.10]', 'https://api.github.com/repos/python/cpython/issues/29669', '[3.10] [doc] Clarify MRO precedence in descriptor super binding section (GH-29539)')
+('2021-12-11 00:01:37', 'Issue', 'closed', ' [3.9]', 'https://api.github.com/repos/python/cpython/issues/29670', '[3.9] [doc] Clarify MRO precedence in descriptor super binding section (GH-29539)')
+('2021-12-11 00:02:00', 'Issue', 'closed', ' [3.8]', 'https://api.github.com/repos/python/cpython/issues/29710', '[3.8] bpo-45859: Mark test_field_descriptor in test_collections as CPython-only (GH-29691)')
+
+Process finished with exit code 0
