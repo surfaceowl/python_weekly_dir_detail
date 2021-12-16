@@ -12,7 +12,7 @@ remaining=4356, limit=5000))
      500   29641  2021-11-20 09:35:55  JMcB17
      550   29611  2021-11-18 08:50:50  ethanfurman
      600   29537  2021-11-16 09:57:20  miss-islington
-function 'get_prs_of_interest' executed in 242.9023s
+function 'get_prs_from_date_range' executed in 242.9023s
 function 'extract_pr_info_to_final_format' executed in 0.0000s
 GitHub ratelimit status is: RateLimit(core=Rate(reset=2021-12-08 19:36:59,
 remaining=4356, limit=5000))

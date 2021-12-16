@@ -1,4 +1,4 @@
-function 'get_prs_of_interest' executed in 1160.5946s
+function 'get_prs_from_date_range' executed in 1160.5946s
 function 'extract_pr_info_to_final_format' executed in 0.0010s
 GitHub ratelimit status is: RateLimit(core=Rate(reset=2021-12-09 02:55:17,
 remaining=4173, limit=5000))

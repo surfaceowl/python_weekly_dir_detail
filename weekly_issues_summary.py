@@ -6,7 +6,7 @@ import logging
 
 from config import repo
 
-logging.basicConfig(encoding="utf-8", level=logging.WARNING)
+logging.basicConfig(encoding="utf-8", level=logging.INFO)
 
 
 def is_issue_date_interesting(date_to_consider, start_date, end_date, end_date_buffer):
@@ -26,6 +26,7 @@ def is_issue_date_interesting(date_to_consider, start_date, end_date, end_date_b
 
 def get_issues_of_interest(start_date_inner):
     """use PyGithub API and return issues from recently updated to older"""
+    logging.info("begin pulling issues of interest")
     return repo.get_issues(
         state="all", since=start_date_inner, sort="updated", direction="desc"
     )

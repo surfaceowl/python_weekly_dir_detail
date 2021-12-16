@@ -15,7 +15,7 @@ from config import end_date_buffer
 from config import pull_requests_all
 from config import issues_all
 
-logging.basicConfig(encoding="utf-8", level=logging.WARNING)
+logging.basicConfig(encoding="utf-8", level=logging.INFO)
 
 
 def main():
@@ -30,7 +30,12 @@ def main():
 
     combined_results = pr_results + issue_results
 
-    combined_results = sort_final_data(combined_results)
+    # combined_results = sort_final_data(combined_results)
 
     for item in combined_results:
         print(item)
+
+
+if __name__ == "__main__":
+
+    main()

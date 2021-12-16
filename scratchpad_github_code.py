@@ -6,7 +6,7 @@ import logging
 # from config import developer_ids
 from utilities import check_github_rate_limit
 
-logging.basicConfig(encoding="utf-8", level=logging.WARNING)
+logging.basicConfig(encoding="utf-8", level=logging.INFO)
 
 github_host = Github(os.environ.get("GITHUB_ACCESS_TOKEN"))
 repo = github_host.get_repo("python/cpython")
