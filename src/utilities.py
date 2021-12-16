@@ -2,12 +2,14 @@
 general project utilities
 """
 import datetime
+import hashlib
 import logging
 import os
-import hashlib
 from time import time
+
 from github import GithubException
 from github import RateLimitExceededException
+
 from config import github_host
 
 logging.basicConfig(encoding="utf-8", level=logging.INFO)
@@ -15,7 +17,13 @@ logging.basicConfig(encoding="utf-8", level=logging.INFO)
 
 def check_github_rate_limit():
     """check current consumption of 5,000 call/hour rate limit for
-    authenticated GitHub user tokens"""
+    authenticated GitHub user tokens
+
+    Args: None
+
+    Returns:
+        Tuple of current API calls (within hour); total hourly API calls, API reset time
+    """
 
     github_ratelimit = 5000
 
@@ -32,14 +40,35 @@ def check_github_rate_limit():
 
 
 def create_date_object(input_standard_date: str) -> datetime:
-    """given input string of form YYYY-MM-DD HH:MM:SS; convert to datetime object"""
+    """given input string of form YYYY-MM-DD HH:MM:SS; convert to datetime object
+
+    Args:
+      input_standard_date: input string in specific standard format returned by GitHub
+
+    Returns:
+        datetime.datetime object representing same time as input string
+
+    """
     return datetime.datetime.strptime(input_standard_date, "%Y-%m-%d %H:%M:%S")
 
 
 def timer_decorator(function):
+    """
+    timer decorator to track elapsed runtime for functions
+
+    Args:
+      function: arbitrary function we want to track elapsed runtime of
+
+    Returns:
+        wrapped function
+
+    """
     # This function shows the execution time of
     # the function object passed
     def wrapped_function(*args, **kwargs):
+        """
+        wrapped function for timer decorator
+        """
         time_start = time()
         result = function(*args, **kwargs)
         time_done = time()
@@ -53,6 +82,19 @@ def timer_decorator(function):
 
 
 def hash_file(filename):
+    """
+    computes hash value of file contents, to simplify pytest assert statements for
+    complex test cases that output files.  For cross-platform compatibility, make sure
+    files are read/written in binary, and use unix-style line endings, otherwise hashes
+    will not match despite content being same in ASCII.
+
+    Args:
+        filename
+
+    Returns:
+        hashnumber
+
+    """
     if os.path.isfile(filename) is False:
         raise Exception("File not found for hash operation")
 

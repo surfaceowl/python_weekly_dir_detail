@@ -1,6 +1,6 @@
 """
 separate test to troubleshoot PRS that have been difficult to capture in other tests
-named differently so it does not run automatically when running pytest, as it
+named differently, so it does not run automatically when running pytest, as it
 duplicates the `pr_slow` tests
 """
 

@@ -52,7 +52,7 @@ minimal dependencies.
 ### Usage
 
 Modify `config.py` as needed, and run main.  When running against large repos (e.g., 
-cpython) some of the queries can take a long time (e.g, 5 min) due to limitations in 
+cpython) some queries can take a long time (e.g, 5 min) due to limitations in 
 the GitHub API and the PyGitHub library.  As an example, GitHub returns the results 
 from the Pull Request API in chunks, but does not provide a utility to limit search 
 results by filtering on Pull Requests updates since, or between certain dates.

@@ -21,18 +21,21 @@ logging.basicConfig(encoding="utf-8", level=logging.INFO)
 
 
 def check_for_interesting_dates(
-    each_pull_request, report_start_date, report_end_date
+    each_pull_request: tuple, report_start_date: datetime, report_end_date: datetime
 ) -> dict:
-    """
-    converts select datetime fields to boolean; simplifies PR classification logic
-    :param tuple each_pull_request: single PR object from GitHub
-    :param report_start_date: begin report period
-    :param report_end_date: end report period
-    :returns
-        - created: datetime PR was opened
-        - updated: datetime PR was *last* updated
-        - closed: datetime PR was closed
-        - merged: datetime PR was merged
+    """converts select datetime fields to boolean; simplifies PR classification logic
+
+    Args:
+      each_pull_request: single PR object from GitHub
+      report_start_date: begin report period
+      report_end_date: end report period
+
+    Returns:
+      - created: when PR was opened
+      - updated: when PR was *last* updated
+      - closed: when PR was closed
+      - merged: when PR was merged
+
     """
     created_date_of_interest = bool(
         report_start_date <= each_pull_request.created_at <= report_end_date
@@ -65,14 +68,21 @@ def check_for_interesting_dates(
 # END check_for_interesting_dates
 
 
-def check_developer_wrote_comments(pr_object, developer_ids) -> bool:
-    """
+def check_developer_wrote_comments(pr_object: tuple,
+                                   developer_ids: list) -> bool:
+    """checks if developer commented on a PR
+
     PyGitHub does not provide easy way to confirm if a developer reviewed a PR.
     As workaround, we parse written PR comments for target developer_id
     assuming if "{developer_id} approved these changes" is found, the PR was reviewed
-    :param pr_object:
-    :param developer_ids: list of GitHub IDs of developers we are interested in
-    :return: bool: developer_commented
+
+    Args:
+      pr_object: tuple of elements from the GitHub PR object
+      developer_ids: list of GitHub IDs of developers we are interested in
+
+    Returns:
+      bool: developer_commented
+
     """
     # use our person GitHub access token to avoid response limits
     headers_for_requests = {"Authorization": f"token {github_token}"}
@@ -132,18 +142,23 @@ def check_developer_wrote_comments(pr_object, developer_ids) -> bool:
 
 
 @timer_decorator
-def get_pr_objects_from_pr_numbers(prs_to_get, developer_ids, start_date, end_date):
-    """
-    retrieves list of pr objects from arbitrary list of GitHub pr numbers
+def get_pr_objects_from_pr_numbers(
+    prs_to_get: list, developer_ids: list, start_date: datetime, end_date: datetime
+):
+    """retrieves list of pr objects from arbitrary list of GitHub pr numbers
     useful for quickly getting summary info manually
-    :param list prs_to_get: PR numbers only to get pr objects with
-    :param list developer_ids: ids from config.py
-    :param datetime start_date: beginning of report period
-    :param datetime end_date: end of report period
-    :returns
-        - user_input_list list - downstream keeps PRs if modified after search window
-        - pr_objects list of tuple - GitHub pr objects
-        - reviewed_prs_found - list of pr numbers that were reviewed
+
+    Args:
+      prs_to_get: PR numbers only to get pr objects with
+      developer_ids: ids from config.py
+      start_date: beginning of report period
+      end_date: end of report period
+
+    Returns:
+      user_input_list list - downstream keeps PRs if modified after search window
+      - pr_objects list of tuple - GitHub pr objects
+      - reviewed_prs_found - list of pr numbers that were reviewed
+
     """
     logging.info(f"retrieving {len(prs_to_get)} PRs: {prs_to_get}")
 
@@ -160,23 +175,26 @@ def get_pr_objects_from_pr_numbers(prs_to_get, developer_ids, start_date, end_da
 
 @timer_decorator
 def filter_prs_from_date_range(
-    pull_request_inputs,
-    developer_ids,
-    report_start_date,
-    report_end_date,
+    pull_request_inputs: list,
+    developer_ids: list,
+    report_start_date: datetime,
+    report_end_date: datetime,
     user_input_prs=[],
 ):
-    """
-    filters all PRs in the repo for the one's we care about
+    """filters all PRs in the repo for the one's we care about
     driven by repo name; developer ids of interest and start/end dates
-    :param list pull_request_inputs: paginated list tuples, all PRs from GitHub API
-    :param list developer_ids: GitHub developer ids
-    :param datetime report_start_date: for local filtering
-    :param datetime report_end_date: also for local filtering
-    :param list user_input_prs: user input of specific pr numbers to find
-    :returns:
-        - list prs_of_interest; list of tuples - all PR detail
-        - list reviewed_pull_requests; list of ints; PR numbers that were reviewed
+
+    Args:
+      pull_request_inputs: paginated list tuples, all PRs from GitHub API
+      developer_ids: GitHub developer ids
+      report_start_date: for local filtering
+      report_end_date: also for local filtering
+      user_input_prs: (Default value = [])user input of specific pr numbers to find
+
+    Returns:
+      list prs_of_interest; list of tuples - all PR detail
+      - list reviewed_pull_requests; list of ints; PR numbers that were reviewed
+
     """
     logging.info("begin finding pull requests of interest by date range.")
 
@@ -255,7 +273,7 @@ def filter_prs_from_date_range(
                 prs_of_interest.append(each_pull_request)
                 prs_reviewed_inner.append(each_pull_request.number)
 
-                # keep PRs we closed or enabled another to close (do not use merged filter)
+                # keep PRs we closed or enabled another to close (don't use merged_at)
                 if each_pull_request.state == "closed" and closed_date_of_interest:
                     prs_of_interest.append(each_pull_request)
                 else:
@@ -269,22 +287,26 @@ def filter_prs_from_date_range(
 
 @timer_decorator
 def summarize_pr_info(
-    interesting_pull_requests,
-    reviewed_pull_requests,
-    developer_ids,
-    report_start_date,
-    report_end_date,
+    interesting_pull_requests: list,
+    reviewed_pull_requests: list,
+    developer_ids: list,
+    report_start_date: datetime,
+    report_end_date: datetime,
 ):
-    """
-    summarizes key PR fields into copy/paste text block ready to drop into the weekly
+    """summarizes key PR fields into copy/paste text block ready to drop into the weekly
     blog report.  Assumes PRs may have multiple reportable states and dates in each
     period (e.g., authored & merged, reviewed & closed, etc. too many to list)
-    :param list interesting_pull_requests: list of tuples, subset of PRs we care about
-    :param list reviewed_pull_requests: list of ints, PR #s confirmed by comment text
-    :param list developer_ids: list of developer ids we are interested in
-    :param datetime report_start_date: beginning of period for local filtering
-    :param datetime: report_end_date: end of period for local filtering
-    :return: list: report_data; list of strings we can easily print
+
+    Args:
+      interesting_pull_requests: list of tuples, subset of PRs we care about
+      reviewed_pull_requests: list of ints, PR #s confirmed by comment text
+      developer_ids: list of developer ids we are interested in
+      report_start_date: beginning of period for local filtering
+      report_end_date: end of period for local filtering
+
+    Returns:
+      list: report_data; list of strings we can easily print
+
     """
     logging.info("begin extracting PR info into friendly report format")
 
@@ -351,15 +373,26 @@ def summarize_pr_info(
 
 
 def append_report_data(
-    report_data, each_pull_request, current_pr_action, date_to_use_for_pr
+    report_data: list,
+    each_pull_request: tuple,
+    current_pr_action: str,
+    date_to_use_for_pr: datetime,
 ):
-    """
-    adds confirmed pr event to the report_data list
-    :param list report_data: results we want to keep for report
-    :param tuple each_pull_request: unique PR object from GitHub
-    :param str current_pr_action: denotes what happened to PR (e.g. merged, etc.)
-    :param date date_to_use_for_pr: selected date from PR for report sorting
-    :return list report_data: results we want to keep
+    """adds confirmed pr event to the report_data list
+
+    Args:
+      report_data: results we want to keep for report
+      each_pull_request: unique PR object from GitHub
+      current_pr_action: denotes what happened to PR (e.g. merged, etc.)
+      date_to_use_for_pr: selected date from PR for report sorting
+
+    Returns:
+        list report_data: results we want to keep
+        - report_data:
+        - each_pull_request:
+        - current_pr_action:
+        - date_to_use_for_pr:
+
     """
     # create concise text and HTML link
     link_text = f"{current_pr_action} GH-{each_pull_request.number}"
@@ -382,10 +415,14 @@ def append_report_data(
 
 
 def create_pr_friendly_title(each_pull_request) -> str:
-    """
-    create friendly PR title for report
-    :param tuple each_pull_request: pr object from GitHub
-    :return str friendly_title: cleaned up title string
+    """create friendly PR title for report
+
+    Args:
+      tuple: each_pull_request: pr object from GitHub
+
+    Returns: str friendly_title: cleaned up title string
+      each_pull_request:
+
     """
     if (
         each_pull_request.base.ref is None
@@ -400,11 +437,22 @@ def create_pr_friendly_title(each_pull_request) -> str:
     return friendly_title
 
 
-def sort_final_data(report_data):
-    # messy nested sort worth it for easy copy & paste output
-    # outer sort = day of week (ascending)
-    # 2nd sort = issue/PR (ascending)
-    # inner sort = branch name (descending)
+def sort_final_data(report_data: list) -> list:
+    """sorts data using three keys: day, issue/PR and branch name
+
+    messy nested sort worth it for easy copy & paste output
+    outer sort = day of week (ascending)
+    2nd sort = issue/PR (ascending)
+    inner sort = branch name (descending)
+
+    Args:
+      report_data:
+
+    Returns:
+        report_data sorted per abovve
+
+    """
+
     logging.info("begin sort of final report")
     try:
         report_data = sorted(
@@ -421,12 +469,17 @@ def sort_final_data(report_data):
 
 
 @timer_decorator
-def format_final_html_block(report_data):
-    """
-    create html block to mirror existing blog format for `Detailed Log` section
+def format_final_html_block(report_data: list) -> list:
+    """creates html block to mirror existing blog format for `Detailed Log` section
+
     bullet list sorted by Day of Week; category of work done (e.g., Issue/PR), then item
-    :param list report_data: final report data we need to process for printing
-    :return: list report_output: list of strings, ready for manual copy/paste into blog
+
+    Args:
+      report_data: final report data we need to process for printing
+
+    Returns:
+      report_data: list of strings, ready for manual copy/paste into blog
+
     """
     logging.info("begin formatting for blog")
     report_output = []
@@ -466,14 +519,20 @@ def format_final_html_block(report_data):
     return report_output
 
 
-def get_final_summary(pull_requests, developer_ids, start_date, end_date):
-    """
-    utility to safely wrap our functions and return nicely summarized results
-    :param list pull_requests:  input list of tuples of PRs from GitHub
-    :param list developer_ids: GitHub developer ids as str
-    :param datetime start_date:  begin report period for local filtering
-    :param datetime end_date: end of report period for local filtering
-    :return: list final summary: list of formatted strings for easy copy/paste
+def get_final_summary(
+    pull_requests: list, developer_ids: list, start_date: datetime, end_date: datetime
+) -> list:
+    """utility to safely wrap our functions and return nicely summarized results
+
+    Args:
+      pull_requests:  input list of tuples of PRs from GitHub
+      developer_ids: GitHub developer ids as str
+      start_date:  begin report period for local filtering
+      end_date: end of report period for local filtering
+
+    Returns:
+      final summary: list of formatted strings for easy copy/paste
+
     """
     logging.info("starting main routine - pulling from GitHub for report")
     final_summary = []

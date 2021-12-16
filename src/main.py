@@ -22,6 +22,7 @@ logging.basicConfig(encoding="utf-8", level=logging.INFO)
 def main():
     """main program to pull data and produce blog-ready output"""
     check_github_rate_limit()
+
     pr_results = get_final_summary(
         pull_requests_all, developer_ids, start_date, end_date
     )
