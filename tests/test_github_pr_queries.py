@@ -14,7 +14,8 @@ import datetime
 
 from config import developer_ids
 from config import repo
-from weekly_pr_summary import get_prs_from_date_range
+from weekly_pr_summary import filter_prs_from_date_range
+from utilities import check_github_rate_limit
 
 
 def test_get_one_closed_pr29537():
@@ -29,7 +30,7 @@ def test_get_one_closed_pr29537():
 
     list_with_pull_report_29537 = [repo.get_pull(29537)]
 
-    closed_pr_we_care_about, pull_requests_reviewed = get_prs_from_date_range(
+    closed_pr_we_care_about, pull_requests_reviewed = filter_prs_from_date_range(
         list_with_pull_report_29537, developer_ids, start_date, end_date
     )
 
@@ -48,7 +49,7 @@ def test_get_one_authored_pr28044():
 
     list_with_pull_report = [repo.get_pull(28044)]
 
-    authored_pr_we_care_about, pull_requests_reviewed = get_prs_from_date_range(
+    authored_pr_we_care_about, pull_requests_reviewed = filter_prs_from_date_range(
         list_with_pull_report, developer_ids, start_date, end_date
     )
 
@@ -67,7 +68,7 @@ def test_get_one_reviewed_pr28089():
 
     list_with_pull_report = [repo.get_pull(28089)]
 
-    authored_pr_we_care_about, pull_requests_reviewed = get_prs_from_date_range(
+    authored_pr_we_care_about, pull_requests_reviewed = filter_prs_from_date_range(
         list_with_pull_report, developer_ids, start_date, end_date
     )
 
@@ -86,7 +87,7 @@ def test_get_one_reviewed_pr29440():
 
     list_with_pull_report = [repo.get_pull(29440)]
 
-    authored_pr_we_care_about, pull_requests_reviewed = get_prs_from_date_range(
+    authored_pr_we_care_about, pull_requests_reviewed = filter_prs_from_date_range(
         list_with_pull_report, developer_ids, start_date, end_date
     )
 
@@ -115,7 +116,7 @@ def test_difficult_to_find_prs_on_16nov_search_by_list_of_pr():
     ]
 
     # pull results using our functions
-    pr_we_care_about, pull_requests_reviewed = get_prs_from_date_range(
+    pr_we_care_about, pull_requests_reviewed = filter_prs_from_date_range(
         pull_requests_targeted, developer_ids, start_date, end_date
     )
 
@@ -166,7 +167,7 @@ def test_all_prs_on_16nov_search_by_list_of_pr():
     ]
 
     # pull results using our functions
-    pr_we_care_about, pull_requests_reviewed = get_prs_from_date_range(
+    pr_we_care_about, pull_requests_reviewed = filter_prs_from_date_range(
         pull_requests_targeted, developer_ids, start_date, end_date
     )
 
@@ -184,4 +185,5 @@ def test_all_prs_on_16nov_search_by_list_of_pr():
     # alternate approach
     # have been unable to find PR 29583 due to available metadata
     # despite extensive analysis
+    check_github_rate_limit()
     assert len(pr_not_found_but_expected) <= 1

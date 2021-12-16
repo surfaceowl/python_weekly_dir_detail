@@ -4,18 +4,27 @@ module to pull select issue data from GitHub for cpython Developer In Residence 
 import datetime
 import logging
 
+import github
+
 from config import repo
 
 logging.basicConfig(encoding="utf-8", level=logging.INFO)
 
 
-def is_issue_date_interesting(date_to_consider, start_date, end_date, end_date_buffer):
-    """checks if date should be used as a filter
+def check_if_issue_date_interesting(
+    date_to_consider: datetime.datetime,
+    start_date: datetime.datetime,
+    end_date: datetime.datetime,
+    end_date_buffer: int = 0,
+) -> bool:
+    """
+    checks dates on a PR object to determine if date should be used as a filter
     :param date_to_consider: datetime object
     :param start_date: beginning of filter period
     :param end_date: end of filter period
     :param end_date_buffer: optional buffer to extend end date, and help capture
-    issues closed by others after the DIR work period"""
+    issues closed by others after the DIR work period
+    :return bool: True/False if datetime field is interesting as a filter"""
 
     return bool(
         start_date
@@ -24,8 +33,13 @@ def is_issue_date_interesting(date_to_consider, start_date, end_date, end_date_b
     )
 
 
-def get_issues_of_interest(start_date_inner):
-    """use PyGithub API and return issues from recently updated to older"""
+def get_issues(start_date_inner: datetime.datetime):
+    """
+    use PyGithub API to return issues in descending order
+    from most recently updated to older, stopping at the oldest date = start date
+    :param start_date_inner: date we stop getting issues from GitHub
+    :return GitHub PaginatedList, list of tuples containing PR objects from GitHub
+    """
     logging.info("begin pulling issues of interest")
     return repo.get_issues(
         state="all", since=start_date_inner, sort="updated", direction="desc"
@@ -33,15 +47,22 @@ def get_issues_of_interest(start_date_inner):
 
 
 # noinspection PyUnresolvedReferences
-def filter_issues(input_issues, developer_ids, start_date, end_date, end_date_buffer):
+def filter_issues(
+    input_issues: github.PaginatedList.PaginatedList,
+    developer_ids: list,
+    start_date: datetime.datetime,
+    end_date: datetime.datetime,
+    end_date_buffer: int = 0,
+) -> list:
     """
-     filter and sort issues
-     :param developer_ids:
-     :param input_issues: list of issue objects from GitHub to filter
+     filter issues by various parameters, sorted to help debugging
+    :param input_issues: issues (tuples) from GitHub
+     :param developer_ids: GitHub id strings to filter
      :param start_date: for issue filtering
      :param end_date:  for issue filtering
-     :return: list of combined issues
-    :param end_date_buffer: optional buffer to extend end date
+     :param end_date_buffer: optional buffer to extend end date to capture issues
+            closed by others after the specific period we care about; set in config.py
+     :return: list of combined and sorted issues
     """
     logging.info("begin filter_issues")
     issues_opened, issues_closed, issued_combined = [], [], []
@@ -53,7 +74,7 @@ def filter_issues(input_issues, developer_ids, start_date, end_date, end_date_bu
         else:
             date_to_consider = issue.last_modified
 
-        interesting_date_range = is_issue_date_interesting(
+        interesting_date_range = check_if_issue_date_interesting(
             date_to_consider, start_date, end_date, end_date_buffer
         )
 
@@ -83,15 +104,21 @@ def filter_issues(input_issues, developer_ids, start_date, end_date, end_date_bu
     return sorted(issues_opened + issues_closed, key=lambda x: x.updated_at)
 
 
-def format_issues(input_issues, developer_ids, start_date, end_date, end_date_buffer):
+def format_issues(
+    input_issues: list,
+    developer_ids: list,
+    start_date: datetime.datetime,
+    end_date: datetime.datetime,
+    end_date_buffer: int = 0,
+) -> list:
     """
     extract and formats key fields into an output list
-    :param input_issues: list of tuples containing issues of interest
-    :param developer_ids: list of developer ids, passed in for testing
-    :param start_date: start date of report, passed in for testing
+    :param input_issues: issues (tuples) from GitHub
+    :param developer_ids: GitHub id strings to filter
+    :param start_date: start date of report
     :param end_date: similar, passed in for testing
-    :param end_date_buffer:
-    :return: list of tuples containing reformatted key output fields
+    :param end_date_buffer: number of days to add to 'end time'
+    :return: list issues_summary: list of tuples with select, reformatted fields
     """
     logging.info("beginning format issues")
     issues_summary = []
@@ -109,8 +136,11 @@ def format_issues(input_issues, developer_ids, start_date, end_date, end_date_bu
         match issue.state:
             case "open":
                 # issues we authored
-                if issue.user.login in developer_ids and is_issue_date_interesting(
-                    issue.updated_at, start_date, end_date, end_date_buffer
+                if (
+                    issue.user.login in developer_ids
+                    and check_if_issue_date_interesting(
+                        issue.updated_at, start_date, end_date, end_date_buffer
+                    )
                 ):
                     issues_summary.append(
                         tuple(
@@ -146,15 +176,22 @@ def format_issues(input_issues, developer_ids, start_date, end_date, end_date_bu
     return issues_summary
 
 
-def get_final_issues(issues_all, developer_ids, start_date, end_date, end_date_buffer):
+def get_final_issues(
+    issues_all: list,
+    developer_ids: list,
+    start_date: datetime.datetime,
+    end_date: datetime.datetime,
+    end_date_buffer: int = 0,
+) -> list:
     """
     convenience function to wrap getting, filtering and formatting issues
     to mirror functions in weekly_pr_summary
-    :param issues_all: list of tuples of issues
-    :param developer_ids: list of ids to check
-    :param start_date: datetime of beginning of reporting periods
-    :param end_date: datetime of end of reporting period
+    :param issues_all: issues (tuples) from GitHub
+    :param developer_ids: GitHub id strings to filter
+    :param start_date: beginning of reporting period
+    :param end_date: end of reporting period
     :param end_date_buffer: optional buffer to extend reporting period
+    :return list of formatted strings; by calling the `format_issues` function
     """
 
     filtered_issues = filter_issues(
@@ -164,7 +201,3 @@ def get_final_issues(issues_all, developer_ids, start_date, end_date, end_date_b
     return format_issues(
         filtered_issues, developer_ids, start_date, end_date, end_date_buffer
     )
-
-
-if __name__ == "__main__":
-    pass

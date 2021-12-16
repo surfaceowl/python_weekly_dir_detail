@@ -6,15 +6,28 @@ import logging
 import os
 import hashlib
 from time import time
-
+from github import GithubException
+from github import RateLimitExceededException
 from config import github_host
 
 logging.basicConfig(encoding="utf-8", level=logging.INFO)
 
 
 def check_github_rate_limit():
-    github_ratelimit = github_host.get_rate_limit()
-    logging.debug(f"GitHub ratelimit status is: {github_ratelimit}")
+    """check current consumption of 5,000 call/hour rate limit for
+    authenticated GitHub user tokens"""
+
+    github_ratelimit = 5000
+
+    try:
+        github_ratelimit = github_host.get_rate_limit()
+    except RateLimitExceededException:
+        logging.error(f"GitHub API rate limit exceeded: {github_ratelimit}")
+    except GithubException:
+        logging.error(f"Another GitHub API error occurred: {GithubException}")
+    finally:
+        logging.info(f"GitHub ratelimit status is: {github_ratelimit}")
+
     return github_ratelimit
 
 

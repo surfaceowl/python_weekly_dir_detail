@@ -7,7 +7,7 @@ import logging
 
 from config import developer_ids
 from config import repo
-from weekly_pr_summary import get_prs_from_date_range
+from weekly_pr_summary import filter_prs_from_date_range
 
 logging.basicConfig(encoding="utf-8", level=logging.WARN)
 
@@ -27,7 +27,7 @@ def test_get_one_closed_not_merged_pr29440():
     (
         closed_not_merged_pr_we_care_about,
         pull_requests_reviewed,
-    ) = get_prs_from_date_range(
+    ) = filter_prs_from_date_range(
         list_with_pull_report, developer_ids, start_date, end_date
     )
 

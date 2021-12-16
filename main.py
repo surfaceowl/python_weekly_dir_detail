@@ -12,7 +12,7 @@ from config import pull_requests_all
 from config import start_date
 from utilities import check_github_rate_limit
 from weekly_issues_summary import get_final_issues
-from weekly_pr_summary import format_blog_html_block
+from weekly_pr_summary import format_final_html_block
 from weekly_pr_summary import get_final_summary
 from weekly_pr_summary import sort_final_data
 
@@ -34,7 +34,7 @@ def main():
 
     combined_results = sort_final_data(combined_results)
 
-    combined_results = format_blog_html_block(combined_results)
+    combined_results = format_final_html_block(combined_results)
 
     for item in combined_results:
         print(item)

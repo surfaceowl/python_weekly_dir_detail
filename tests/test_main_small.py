@@ -12,9 +12,9 @@ from config import start_date
 from utilities import check_github_rate_limit
 from utilities import hash_file
 from weekly_issues_summary import get_final_issues
-from weekly_pr_summary import extract_pr_info_to_final_format
-from weekly_pr_summary import format_blog_html_block
-from weekly_pr_summary import get_prs_from_list_pr_numbers
+from weekly_pr_summary import summarize_pr_info
+from weekly_pr_summary import format_final_html_block
+from weekly_pr_summary import get_pr_objects_from_pr_numbers
 from weekly_pr_summary import sort_final_data
 
 logging.basicConfig(encoding="utf-8", level=logging.INFO)
@@ -22,12 +22,11 @@ logging.basicConfig(encoding="utf-8", level=logging.INFO)
 
 def test_main():
     """ "test shadow copy of main routine with subset of data for end-to-end testing"""
-    check_github_rate_limit()
-    pr_obj_shortlist, pr_reviewed = get_prs_from_list_pr_numbers(
+    pr_obj_shortlist, pr_reviewed = get_pr_objects_from_pr_numbers(
         [29653, 29664, 13580, 28722], developer_ids, start_date, end_date
     )
 
-    pr_raw_results = extract_pr_info_to_final_format(
+    pr_raw_results = summarize_pr_info(
         pr_obj_shortlist, pr_reviewed, developer_ids, start_date, end_date
     )
 
@@ -39,11 +38,13 @@ def test_main():
 
     combined_results = sort_final_data(combined_results)
 
-    combined_results = format_blog_html_block(combined_results)
+    combined_results = format_final_html_block(combined_results)
 
     with open("test_main_small_test_results.txt", "wb") as writer:
         for item in combined_results:
             writer.write(f"{item}\n".encode())
+
+    check_github_rate_limit()
 
     # test hash values of actual vs expected results
     actual_results = hash_file("test_main_small_test_results.txt")

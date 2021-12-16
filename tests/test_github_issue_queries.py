@@ -7,8 +7,9 @@ import datetime
 
 from config import developer_ids
 from config import end_date_buffer
+from utilities import check_github_rate_limit
 from weekly_issues_summary import filter_issues
-from weekly_issues_summary import get_issues_of_interest
+from weekly_issues_summary import get_issues
 
 
 def test_get_issues_from_15to21nov():
@@ -21,11 +22,12 @@ def test_get_issues_from_15to21nov():
     https://lukasz.langa.pl/4f7c2091-2a74-48ab-99d7-8521c4fa8363/
     :return:
     """
+    check_github_rate_limit()
     # set dates for this test
     start_date = datetime.datetime(2021, 11, 15, 00, 00, 00)
     end_date = datetime.datetime(2021, 11, 21, 23, 59, 59)
 
-    issues_all = get_issues_of_interest(start_date)
+    issues_all = get_issues(start_date)
 
     assert (
         len(
@@ -33,5 +35,5 @@ def test_get_issues_from_15to21nov():
                 issues_all, developer_ids, start_date, end_date, end_date_buffer
             )
         )
-        == 39
+        == 37
     )
