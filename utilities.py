@@ -3,6 +3,8 @@ general project utilities
 """
 import datetime
 import logging
+import os
+import hashlib
 from time import time
 
 from config import github_host
@@ -35,3 +37,12 @@ def timer_decorator(function):
         return result
 
     return wrapped_function
+
+
+def hash_file(filename):
+    if os.path.isfile(filename) is False:
+        raise Exception("File not found for hash operation")
+
+    # open file for reading in binary mode
+    with open(filename, "rb") as file:
+        return hashlib.sha512(file.read()).hexdigest()

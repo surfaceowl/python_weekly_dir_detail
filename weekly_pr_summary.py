@@ -51,16 +51,16 @@ def developer_wrote_comments(pr_object, developer_ids) -> bool:
     found_string = False
     successful_searches = []
 
+    # python in string search
     for developer in developer_ids:
         for string in search_strings:
             new_string = f"{developer} {string}"
-            # python in search
             # logging.warning(f"searching exact string: {new_string}")
             if new_string in pr_discussion_text:
                 successful_searches.append((f"found! with exact string: {new_string}"))
                 # logging.warning(f"found! exact string: {new_string}")
-                # return True
 
+    # backup regex search - both are needed due to GitHub url format differences
     for developer in developer_ids:
         for string in search_strings:
             # regex finds {developer} NEAR {search string} (ref: https://regex101.com/)
@@ -70,7 +70,6 @@ def developer_wrote_comments(pr_object, developer_ids) -> bool:
             if re.search(pattern, pr_discussion_text):
                 successful_searches.append(f"found!  with {regex}")
                 # logging.warning(f"found!  searching {string} with {regex}")
-                # return True
 
     if not successful_searches:
         return False
@@ -88,12 +87,15 @@ def get_prs_from_list_pr_numbers(input_list, developer_ids, start_date, end_date
     useful for quickly getting summary info manually"""
     logging.info(f"retrieving {len(input_list)} PRs: {input_list}")
 
-    prs_to_summarize = [repo.get_pull(item) for item in sorted(input_list)]
+    prs_from_user_list = [repo.get_pull(item) for item in sorted(input_list)]
 
-    pull_requests_of_interests, pull_requests_reviewed = get_prs_from_date_range(
-        prs_to_summarize, developer_ids, start_date, end_date
-    )
-    return pull_requests_of_interests, pull_requests_reviewed
+    pull_requests_reviewed = [
+        each_pull_request.number
+        for each_pull_request in prs_from_user_list
+        if developer_wrote_comments(each_pull_request, developer_ids)
+    ]
+
+    return prs_from_user_list, pull_requests_reviewed
 
 
 @timer_decorator
@@ -120,7 +122,10 @@ def get_prs_from_date_range(
 
     for each_pull_request in pull_request_inputs:
 
-        logging.warning(f"checking PR# {each_pull_request.number}")
+        logging.warning(
+            f"checking PR# {each_pull_request.number} @"
+            f"{each_pull_request.updated_at}"
+        )
 
         if each_pull_request.updated_at < report_start_date:
             # Our API call return is sorted in descending dates, once we go earlier

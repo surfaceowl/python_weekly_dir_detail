@@ -1,0 +1,57 @@
+
+Wednesday
+
+Issue
+<li> https://api.github.com/repos/python/cpython/issues/29596  bpo-45831: _Py_DumpASCII() uses a single write() call if possible/li>
+<li> https://api.github.com/repos/python/cpython/issues/29590  bpo-45826: Fix a crash in suggestions.c by checking for `traceback is None`/li>
+<li> https://api.github.com/repos/python/cpython/issues/29571  Add missing word in unittest docs./li>
+<li> https://api.github.com/repos/python/cpython/issues/29598 [3.10] bpo-45831: _Py_DumpASCII() uses a single write() call if possible (GH-29596)/li>
+<li> https://api.github.com/repos/python/cpython/issues/29586 [3.10] bpo-45822: Respect PEP 263's coding cookies in the parser even if flags are not provided (GH-29582)./li>
+<li> https://api.github.com/repos/python/cpython/issues/29597  [3.9] bpo-45831: _Py_DumpASCII() uses a single write() call if possible (GH-29596)/li>
+<li> https://api.github.com/repos/python/cpython/issues/29585  [3.9] bpo-45822: Respect PEP 263's coding cookies in the parser even if flags are not provided (GH-29582)/li>
+<li> https://api.github.com/repos/python/cpython/issues/29600  [3.9] bpo-42540: reallocation of id_mutex should not force default allocator (GH-29564)/li>
+
+Thursday
+<li> https://api.github.com/repos/python/cpython/issues/29589  bpo-45429: Merge whatsnew about time.sleep/li>
+<li> https://api.github.com/repos/python/cpython/issues/29618  bpo-45837: Properly deprecate turtle.RawTurtle.settiltangle/li>
+<li> https://api.github.com/repos/python/cpython/issues/29603 [3.10] [docs] Add missing word "any" in unittest -k cmdline option description (GH-29571)/li>
+<li> https://api.github.com/repos/python/cpython/issues/29602 [3.10] bpo-45826: Fix a crash in suggestions.c by checking for `traceback is None` (GH-29590)/li>
+<li> https://api.github.com/repos/python/cpython/issues/29621 [3.10] bpo-45640: [docs] Tokens are now clickable (GH-29260)/li>
+<li> https://api.github.com/repos/python/cpython/issues/29620 [3.10] [doc] bpo-45680: Disambiguate ``__getitem__`` and ``__class_getitem__`` in the  data model (GH-29389)/li>
+<li> https://api.github.com/repos/python/cpython/issues/29612 [3.10] bpo-45835: Fix race condition in test_queue (GH-29601)/li>
+<li> https://api.github.com/repos/python/cpython/issues/29584  [3.9] bpo-45820: Fix a segfault when the parser fails without reading any input (GH-29580)/li>
+<li> https://api.github.com/repos/python/cpython/issues/29604  [3.9] [docs] Add missing word "any" in unittest -k cmdline option description (GH-29571)/li>
+<li> https://api.github.com/repos/python/cpython/issues/29605  [3.9] bpo-29620: iterate over a copy of sys.modules (GH-4800)/li>
+<li> https://api.github.com/repos/python/cpython/issues/29619  [3.9] [doc] bpo-45680: Disambiguate ``__getitem__`` and ``__class_getitem__`` in the  data model (GH-29389)/li>
+<li> https://api.github.com/repos/python/cpython/issues/29623  [3.9] bpo-45640: [docs] Tokens are now clickable (GH-29260)/li>
+<li> https://api.github.com/repos/python/cpython/issues/29622  [3.9] Expand about soft keywords in the docs for keyword.py (GH-29139)/li>
+
+Friday
+<li> https://api.github.com/repos/python/cpython/issues/29634  bpo-19072: Classmethod can wrap other classmethod like descriptors. See  b83861f/li>
+<li> https://api.github.com/repos/python/cpython/issues/29636  bpo-42238: [doc]: Hide false positive in make suspicious./li>
+<li> https://api.github.com/repos/python/cpython/issues/29643 [3.10] bpo-19072: Classmethod can wrap other classmethod like descriptors (GH-29634)/li>
+<li> https://api.github.com/repos/python/cpython/issues/29629 [3.10] bpo-45837: Note tiltangle is not deprecated, it's really settiltangle/li>
+<li> https://api.github.com/repos/python/cpython/issues/29640  [3.9] bpo-45806: Fix recovery from stack overflow for 3.9. Again./li>
+<li> https://api.github.com/repos/python/cpython/issues/29628  [3.9] bpo-45838: Fix incorrect line numbers in Tools/gdb/libpython.py/li>
+<li> https://api.github.com/repos/python/cpython/issues/29630  [3.9] bpo-45837: Note tiltangle is not deprecated, it's really settiltangle/li>
+
+Saturday
+<li> https://api.github.com/repos/python/cpython/issues/29646  bpo-45848: Allow the parser to get error lines from encoded files/li>
+<li> https://api.github.com/repos/python/cpython/issues/29661 [3.10] bpo-45848: Allow the parser to get error lines from encoded files (GH-29646)/li>
+<li> https://api.github.com/repos/python/cpython/issues/29656 [3.10] bpo-45846: Fix capitalisation of Van Rossum at the start of sentence (GH-29641)/li>
+<li> https://api.github.com/repos/python/cpython/issues/29663 [3.10] bpo-42158: Add MIME types for n-triples, n-quads, n3 and trig (GH-23230)/li>
+<li> https://api.github.com/repos/python/cpython/issues/29657  [3.9] bpo-45846: Fix capitalisation of Van Rossum at the start of sentence (GH-29641)/li>
+<li> https://api.github.com/repos/python/cpython/issues/29664  [3.9] bpo-42158: Add MIME types for n-triples, n-quads, n3 and trig (GH-23230)/li>
+
+PR
+<li> <a href=https://github.com/python/cpython/pull/29653>closed GH-29653</a> [main] bpo-45846: Capitalize 'Van Rossum'/li>
+<li> <a href=https://github.com/python/cpython/pull/29664>closed GH-29664</a>  [3.9] bpo-42158: Add MIME types for n-triples, n-quads, n3 and trig (GH-23230)/li>
+<li> <a href=https://github.com/python/cpython/pull/29664>reviewed GH-29664</a>  [3.9] bpo-42158: Add MIME types for n-triples, n-quads, n3 and trig (GH-23230)/li>
+
+Saturday
+
+Issue
+<li> https://api.github.com/repos/python/cpython/issues/29669 [3.10] [doc] Clarify MRO precedence in descriptor super binding section (GH-29539)/li>
+<li> https://api.github.com/repos/python/cpython/issues/29670  [3.9] [doc] Clarify MRO precedence in descriptor super binding section (GH-29539)/li>
+<li> https://api.github.com/repos/python/cpython/issues/29710  [3.8] bpo-45859: Mark test_field_descriptor in test_collections as CPython-only (GH-29691)/li>
+
