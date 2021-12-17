@@ -25,7 +25,7 @@ def check_github_rate_limit():
         Tuple of current API calls (within hour); total hourly API calls, API reset time
     """
 
-    github_ratelimit = 5000
+    github_ratelimit: int = 5000
 
     try:
         github_ratelimit = github_host.get_rate_limit()
@@ -39,7 +39,7 @@ def check_github_rate_limit():
     return github_ratelimit
 
 
-def create_date_object(input_standard_date: str) -> datetime:
+def create_date_object(input_standard_date: str):
     """given input string of form YYYY-MM-DD HH:MM:SS; convert to datetime object
 
     Args:

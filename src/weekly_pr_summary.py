@@ -21,7 +21,7 @@ logging.basicConfig(encoding="utf-8", level=logging.INFO)
 
 
 def check_for_interesting_dates(
-    each_pull_request: tuple, report_start_date: datetime, report_end_date: datetime
+    each_pull_request, report_start_date, report_end_date
 ) -> dict:
     """converts select datetime fields to boolean; simplifies PR classification logic
 
@@ -68,8 +68,8 @@ def check_for_interesting_dates(
 # END check_for_interesting_dates
 
 
-def check_developer_wrote_comments(pr_object: tuple,
-                                   developer_ids: list) -> bool:
+def check_developer_wrote_comments(pr_object,
+                                   developer_ids: list[str]) -> bool:
     """checks if developer commented on a PR
 
     PyGitHub does not provide easy way to confirm if a developer reviewed a PR.
@@ -135,7 +135,7 @@ def check_developer_wrote_comments(pr_object: tuple,
         return False
     number_of_successful_searches = len(successful_searches)
     successful_searches.insert(0, f"{pr_object.number}")
-    successful_searches.insert(1, number_of_successful_searches)
+    successful_searches.insert(1, str(number_of_successful_searches))
     for item in successful_searches:
         logging.info(item)
     return True
@@ -143,7 +143,7 @@ def check_developer_wrote_comments(pr_object: tuple,
 
 @timer_decorator
 def get_pr_objects_from_pr_numbers(
-    prs_to_get: list, developer_ids: list, start_date: datetime, end_date: datetime
+    prs_to_get: list[int], developer_ids: list[str], start_date, end_date
 ):
     """retrieves list of pr objects from arbitrary list of GitHub pr numbers
     useful for quickly getting summary info manually
@@ -175,11 +175,11 @@ def get_pr_objects_from_pr_numbers(
 
 @timer_decorator
 def filter_prs_from_date_range(
-    pull_request_inputs: list,
-    developer_ids: list,
-    report_start_date: datetime,
-    report_end_date: datetime,
-    user_input_prs=[],
+    pull_request_inputs,
+    developer_ids: list[str],
+    report_start_date,
+    report_end_date,
+    user_input_prs: list[str] = [],
 ):
     """filters all PRs in the repo for the one's we care about
     driven by repo name; developer ids of interest and start/end dates
@@ -287,11 +287,11 @@ def filter_prs_from_date_range(
 
 @timer_decorator
 def summarize_pr_info(
-    interesting_pull_requests: list,
+    interesting_pull_requests,
     reviewed_pull_requests: list,
     developer_ids: list,
-    report_start_date: datetime,
-    report_end_date: datetime,
+    report_start_date,
+    report_end_date,
 ):
     """summarizes key PR fields into copy/paste text block ready to drop into the weekly
     blog report.  Assumes PRs may have multiple reportable states and dates in each
@@ -310,7 +310,7 @@ def summarize_pr_info(
     """
     logging.info("begin extracting PR info into friendly report format")
 
-    report_data = []
+    report_data: list = []
     for each_pull_request in interesting_pull_requests:
 
         date_check_results = check_for_interesting_dates(
@@ -373,10 +373,10 @@ def summarize_pr_info(
 
 
 def append_report_data(
-    report_data: list,
-    each_pull_request: tuple,
+    report_data,
+    each_pull_request,
     current_pr_action: str,
-    date_to_use_for_pr: datetime,
+    date_to_use_for_pr,
 ):
     """adds confirmed pr event to the report_data list
 
@@ -520,7 +520,7 @@ def format_final_html_block(report_data: list) -> list:
 
 
 def get_final_summary(
-    pull_requests: list, developer_ids: list, start_date: datetime, end_date: datetime
+    pull_requests: list, developer_ids: list, start_date, end_date
 ) -> list:
     """utility to safely wrap our functions and return nicely summarized results
 
