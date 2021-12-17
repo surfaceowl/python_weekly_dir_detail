@@ -9,6 +9,7 @@ import typing
 import github
 
 from config import repo
+from utilities import timer_decorator
 
 logging.basicConfig(encoding="utf-8", level=logging.INFO)
 
@@ -43,7 +44,7 @@ def check_if_issue_date_interesting(
         <= (end_date + datetime.timedelta(days=int(end_date_buffer)))
     )
 
-
+@timer_decorator
 def get_issues(start_date_inner: datetime.datetime):
     """use PyGithub API to return issues in descending order
     from most recently updated to older, stopping at the oldest date = start date
@@ -64,6 +65,7 @@ def get_issues(start_date_inner: datetime.datetime):
 
 
 # noinspection PyUnresolvedReferences,GrazieInspection
+@timer_decorator
 def filter_issues(
     input_issues: github.PaginatedList.PaginatedList,
     developer_ids: list,
@@ -89,6 +91,7 @@ def filter_issues(
     issues_opened, issues_closed, issued_combined = [], [], []
 
     for issue in input_issues:
+        logging.info(f"processing issue: {issue.number}")
         # simplify condition names
         if issue.last_modified is None:
             date_to_consider = issue.created_at
@@ -126,6 +129,7 @@ def filter_issues(
 
 
 @typing.no_type_check
+@timer_decorator
 def format_issues(
     input_issues: list,
     developer_ids: list,
@@ -152,7 +156,7 @@ def format_issues(
     len(input_issues)
 
     for issue in input_issues:
-
+        logging.info(f"formatting issue #: {issue.number}")
         # determine branch based on common PR naming pattern with [X.Y] branch prefix
         if "[main]" in issue.title or "[3." not in issue.title:
             branch_name = "[main]"
@@ -201,7 +205,7 @@ def format_issues(
 
     return issues_summary
 
-
+@timer_decorator
 def get_final_issues(
     issues_all: list,
     developer_ids: list,

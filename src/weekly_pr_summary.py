@@ -68,8 +68,7 @@ def check_for_interesting_dates(
 # END check_for_interesting_dates
 
 
-def check_developer_wrote_comments(pr_object,
-                                   developer_ids: list[str]) -> bool:
+def check_developer_wrote_comments(pr_object, developer_ids: list[str]) -> bool:
     """checks if developer commented on a PR
 
     PyGitHub does not provide easy way to confirm if a developer reviewed a PR.
@@ -115,10 +114,8 @@ def check_developer_wrote_comments(pr_object,
     for developer in developer_ids:
         for string in search_strings:
             new_string = f"{developer} {string}"
-            # logging.info(f"searching exact string: {new_string}")
             if new_string in pr_discussion_text:
                 successful_searches.append((f"found! with exact string: {new_string}"))
-                # logging.info(f"found! exact string: {new_string}")
 
     # backup regex search - both are needed due to GitHub url format differences
     for developer in developer_ids:
@@ -126,10 +123,8 @@ def check_developer_wrote_comments(pr_object,
             # regex finds {developer} NEAR {search string} (ref: https://regex101.com/)
             regex = fr"\b({developer})\W+(?:\w+\W+){0,3}?({string})\b"
             pattern = re.compile(regex)
-            # logging.info(f"searching {string} with {regex}")
             if re.search(pattern, pr_discussion_text):
                 successful_searches.append(f"found!  with {regex}")
-                # logging.info(f"found!  searching {string} with {regex}")
 
     if not successful_searches:
         return False
@@ -545,7 +540,7 @@ def get_final_summary(
             pull_requests, developer_ids, start_date, end_date
         )
 
-        summary = summarize_pr_info(
+        final_summary = summarize_pr_info(
             pull_reports_we_care_about,
             pull_requests_reviewed,
             developer_ids,
@@ -553,16 +548,11 @@ def get_final_summary(
             end_date,
         )
 
-        final_summary = format_final_html_block(summary)
-
     except github.RateLimitExceededException:
         logging.error("github rate limit exceeded", github.RateLimitExceededException)
     except github.GithubException as error:
         logging.error(f"a server error occurred {error}")
     except IndexError as error:
         logging.error(error)
-
-    for item in final_summary:
-        logging.info(item)
 
     return final_summary
