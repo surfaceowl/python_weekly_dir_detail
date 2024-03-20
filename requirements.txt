@@ -1,4 +1,4 @@
-black==21.12b0
+black==24.3.0
 PyGithub==1.55      # utilities for parsing github
 pytest==6.2.5
 pytest-xdist==2.5.0
